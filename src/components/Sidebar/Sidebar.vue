@@ -38,6 +38,7 @@ import KaitzLogo from "@/components/KaitzLogo.vue";
   height: 100dvh;
   transition: width 0.2s ease-in-out;
   position: fixed;
+  box-shadow: 0 0 5px 0 $purple;
 
   &:hover {
     width: 150px;

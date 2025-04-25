@@ -9,7 +9,5 @@
 </template>
 
 <style scoped lang="scss">
-.landing-wrapper {
-  background: red;
-}
+
 </style>

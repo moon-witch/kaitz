@@ -14,7 +14,7 @@ import Sidebar from '@/components/Sidebar/Sidebar.vue'
 <style scoped lang="scss">
 .layout {
   .content {
-    padding-left: 50px;
+    padding-left: 120px;
   }
 }
 </style>

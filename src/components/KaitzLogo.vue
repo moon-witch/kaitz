@@ -26,9 +26,10 @@ const animateLogo = () => {
     const length = path.getTotalLength()
     path.setAttribute('stroke-dasharray', length.toString())
     path.setAttribute('stroke-dashoffset', length.toString())
-    path.setAttribute('stroke', '#cabed2')
+    path.setAttribute('stroke', '#2c1a3c')
     path.setAttribute('stroke-opacity', '1')
-    path.setAttribute('fill', '#ffffff')
+    path.setAttribute('fill', '#2c1a3c')
+    path.setAttribute('fill-opacity', '0')
     path.style.filter = 'none'
     path.style.opacity = '0'
   })
@@ -58,17 +59,18 @@ const animateLogo = () => {
         to: 0,
       },
       stroke: {
-        from: '#cabed2',
-        to: '#2c1a3c',
+        from: '#2c1a3c',
+        to: '#ffffff',
       },
       easing: 'easeOutQuad',
       duration: strokeDuration,
     }, startTime)
 
     tl.add(path, {
+      fillOpacity: { from: 0, to: 1 },
       fill: {
-        from: '#ffffff',
-        to: '#2c1a3c',
+        from: '#2c1a3c',
+        to: '#ffffff',
       },
       easing: 'easeOutQuad',
       duration: fillDuration,
@@ -91,8 +93,8 @@ const animateLogo = () => {
 
       tl.add(path, {
         fill: {
-          from: '#2c1a3c',
-          to: '#ffffff',
+          from: '#ffffff',
+          to: '#2c1a3c',
         },
         easing: 'easeInOutQuad',
         duration: eraseFillDuration,
@@ -104,8 +106,8 @@ const animateLogo = () => {
           to: path.getTotalLength(),
         },
         stroke: {
-          from: '#2c1a3c',
-          to: '#cabed2',
+          from: '#cabed2',
+          to: '#2c1a3c',
         },
         easing: 'easeInOutQuad',
         duration: eraseDuration,
