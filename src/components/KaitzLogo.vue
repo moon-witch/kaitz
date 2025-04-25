@@ -122,7 +122,7 @@ const animateLogo = () => {
       }, reverseStart + eraseFillDuration + eraseDuration)
     })
 
-    const rewindTotalTime = paths.length * perLetterDelay + eraseDuration + eraseFillDuration + 1000
+    const rewindTotalTime = paths.length * perLetterDelay + eraseDuration + eraseFillDuration
     setTimeout(() => {
       animateLogo()
     }, rewindTotalTime)
