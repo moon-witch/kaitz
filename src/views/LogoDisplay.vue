@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import LayoutWrapper from "@/layouts/LayoutWrapper.vue";
+import KaitzLogo from "@/components/KaitzLogo.vue";
 </script>
 
 <template>
-  <LayoutWrapper />
+  <div>
+    <KaitzLogo />
+  </div>
 </template>
 
 <style scoped lang="scss">

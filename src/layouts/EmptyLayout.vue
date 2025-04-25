@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import LayoutWrapper from "@/layouts/LayoutWrapper.vue";
+
 </script>
 
 <template>
-  <LayoutWrapper />
+  <div>
+    <main>
+      <slot />
+    </main>
+  </div>
 </template>
 
 <style scoped lang="scss">
