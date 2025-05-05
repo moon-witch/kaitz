@@ -1,15 +1,32 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, watch, nextTick, ref } from 'vue'
+import { watch, nextTick, ref, type PropType} from 'vue'
 import { animate, stagger } from 'animejs'
 import type { StoryKey } from '@/components/Sidebar/sidebar.config'
 
-interface Props {
-  label: string
-  items: string[]
-  open: boolean
-  keyName: StoryKey
-}
-const props = defineProps<Props>()
+const props = defineProps({
+  label: {
+    type: String,
+    required: true,
+  },
+  items: {
+    type: Array,
+    required: true,
+    default: []
+  },
+  open: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  keyName: {
+    type: String as PropType<StoryKey>
+  },
+  to: {
+    type: String,
+    required: true
+  }
+})
+
 const emit  = defineEmits(['toggle'])
 
 const wrapperEl  = ref<HTMLElement | null>(null)
@@ -112,19 +129,15 @@ function leave(el: HTMLElement, done: () => void) {
     done()
   }, 250)
 }
-
-function afterLeave(el: HTMLElement) {
-  // no cleanup here either
-}
 </script>
 
 <template>
-  <li class="nav-item dropdown">
+  <li class="nav-item dropdown" :class="{ open: open }">
     <div class="dropdown-button">
-      <RouterLink to="#">{{ props.label }}</RouterLink>
+      <RouterLink :to="to">{{ label }}</RouterLink>
       <button
         class="button"
-        :class="{ open: props.open }"
+        :class="{ open: open }"
         @click.prevent="emit('toggle')"
       >▼</button>
     </div>
@@ -135,7 +148,6 @@ function afterLeave(el: HTMLElement) {
       @after-enter="afterEnter"
       @before-leave="beforeLeave"
       @leave="leave"
-      @after-leave="afterLeave"
     >
       <div
         v-if="props.open"
@@ -145,10 +157,10 @@ function afterLeave(el: HTMLElement) {
         <div
           ref="dropdownEl"
           class="dropdown-content"
-          :id="`dropdown-${props.keyName}`"
+          :id="`dropdown-${keyName}`"
         >
           <ul>
-            <li v-for="item in props.items" :key="item">{{ item }}</li>
+            <li v-for="item in items" :key="item">{{ item }}</li>
           </ul>
         </div>
       </div>
@@ -158,26 +170,37 @@ function afterLeave(el: HTMLElement) {
 
 <style scoped lang="scss">
 .nav-item.dropdown {
-  margin-bottom: .5rem;
+  margin: .5rem 1.5rem;
+  border-bottom: 1px solid $white;
+  transition: all $transition;
+
+  &.open {
+    border: 1px solid $white;
+    border-radius: $radius;
+  }
 
   .dropdown-button {
     position: relative;
-    background: white;
+    background: transparent;
     padding: .25rem .5rem;
     margin: 0 .5rem;
     border-radius: 10px;
     text-align: center;
 
+    a {
+      color: $white;
+    }
+
     .button {
       position: absolute;
       right: 50%;
-      bottom: -15px;
+      bottom: -14px;
       transform: translateX(50%) rotate(0deg);
       background: none;
       border: none;
       cursor: pointer;
       transition: transform .25s ease, color .25s ease;
-      color: white;
+      color: $white;
 
       &.open {
         transform: translateX(50%) rotate(180deg);
@@ -209,11 +232,17 @@ function afterLeave(el: HTMLElement) {
   }
 
   li {
-    border: 1px solid $purple;
-    background: $purple;
-    color: white;
-    padding: .25rem;
-    border-radius: 10px;
+    color: $white;
+    text-align: center;
+    padding: .2rem;
+    border-radius: $radius;
+    transition: all $transition;
+
+    &:hover {
+      background: $white;
+      color: $purple;
+      cursor: pointer;
+    }
   }
 }
 </style>

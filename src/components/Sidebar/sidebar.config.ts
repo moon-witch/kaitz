@@ -11,6 +11,7 @@ export interface DropItem {
   key: StoryKey;
   label: string;
   items: string[];
+  to: string;
 }
 
 export type NavItemData = LinkItem | DropItem;
@@ -36,10 +37,10 @@ export const magicItems: string[] = [
 
 // Combined navigation items
 export const navItems: NavItemData[] = [
-  { type: 'link', label: 'Landing', to: '/logo' },
+  { type: 'link', label: 'Landing', to: '/' },
   { type: 'link', label: 'News',    to: '/logo' },
   { type: 'link', label: 'Diary',   to: '/logo' },
-  { type: 'drop', key: 'fantasy',  label: 'Fantasy',  items: fantasyItems },
-  { type: 'drop', key: 'dystopia', label: 'Dystopia', items: dystopiaItems },
-  { type: 'drop', key: 'magic',    label: 'Magic',    items: magicItems }
+  { type: 'drop', key: 'fantasy',  label: 'Fantasy',  items: fantasyItems, to: '/logo' },
+  { type: 'drop', key: 'dystopia', label: 'Dystopia', items: dystopiaItems, to: '/logo' },
+  { type: 'drop', key: 'magic',    label: 'Magic',    items: magicItems, to: '/logo' }
 ];

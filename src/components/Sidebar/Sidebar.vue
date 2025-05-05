@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import {computed, ref} from 'vue'
 import KaitzLogo   from '@/components/KaitzLogo.vue'
 import NavItem     from '@/components/Sidebar/NavItem.vue'
 import NavDropdown from '@/components/Sidebar/NavDropdown.vue'
 import { navItems } from '@/components/Sidebar/sidebar.config'
-import type { StoryKey, NavItemData, DropItem } from '@/components/Sidebar/sidebar.config'
+import type { StoryKey, DropItem } from '@/components/Sidebar/sidebar.config'
+import {useRoute} from "vue-router";
 
 const openDropdown = ref<StoryKey|null>(null)
 function toggleDropdown(key: StoryKey) {
@@ -12,6 +13,12 @@ function toggleDropdown(key: StoryKey) {
 }
 
 const sidebarOpen = ref(true)
+
+const route = useRoute()
+
+const activeRoute = computed(() => {
+  return route.fullPath
+})
 </script>
 
 <template>
@@ -23,8 +30,10 @@ const sidebarOpen = ref(true)
           v-if="item.type === 'link'"
           :label="item.label"
           :to="item.to"
+          :active="activeRoute === item.to"
         />
       </template>
+      {{ activeRoute }}
       <li class="subheader">Stories</li>
       <template v-for="item in navItems" :key="item.label">
         <NavDropdown
@@ -33,6 +42,7 @@ const sidebarOpen = ref(true)
           :items="(item as DropItem).items"
           :open="openDropdown === item.key"
           :keyName="item.key"
+          :to="item.to"
           @toggle="toggleDropdown(item.key)"
         />
       </template>
@@ -65,14 +75,16 @@ const sidebarOpen = ref(true)
   }
 
   .nav {
-    margin-top:1rem;
-    display:flex;flex-direction:column;
+    margin-top:4rem;
+    display:flex;
+    flex-direction:column;
     gap:.5rem;
+
     .subheader {
-      text-align:center; font-weight:bold;
-      border-top:1px solid white;
-      padding-top:.5rem; margin:0 .5rem;
-      color:white;
+      text-align:center;
+      font-weight:bold;
+      color: $white;
+      font-size: 1.3rem;
     }
   }
 
@@ -83,7 +95,7 @@ const sidebarOpen = ref(true)
     transform: translateY(-50%) rotate(90deg);
     background: $purple;
     border: none;
-    color: white;
+    color: $white;
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
     cursor: pointer;
