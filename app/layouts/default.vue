@@ -1,3 +1,18 @@
+<script setup lang="ts">
+import RuneCompass from "~/components/RuneCompass.vue";
+import RuneMenu from "~/components/RuneMenu.vue";
+
+const menuOpen = ref(false);
+
+const toggleMenu = () => {
+  menuOpen.value = !menuOpen.value;
+};
+
+const closeMenu = () => {
+  menuOpen.value = false;
+};
+</script>
+
 <template>
   <div class="app">
     <div class="bg">
@@ -6,17 +21,8 @@
       <div class="bg__moon"></div>
     </div>
 
-    <header class="header">
-      <div class="header__inner">
-        <NuxtLink to="/" class="brand">Archiv</NuxtLink>
-
-        <nav class="nav">
-          <NuxtLink to="/news">News</NuxtLink>
-          <NuxtLink to="/diary">Tagebuch</NuxtLink>
-          <NuxtLink to="/stories">Stories</NuxtLink>
-        </nav>
-      </div>
-    </header>
+    <RuneCompass :open="menuOpen" @click="toggleMenu" />
+    <RuneMenu :open="menuOpen" @close="closeMenu" />
 
     <main class="main">
       <slot />
@@ -60,22 +66,6 @@
     inset: 0;
     opacity: 0.20;
     background: radial-gradient(circle at 70% 10%, rgba($moon-100, 0.18), transparent 60%);
-  }
-}
-
-.header {
-  position: sticky;
-  top: 0;
-  z-index: $z-header;
-  @include glass;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-
-  &__inner {
-    @include container;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 0;
   }
 }
 
