@@ -41,6 +41,8 @@ const closeMenu = () => {
 <style scoped lang="scss">
 .app {
   min-height: 100vh;
+  overflow-x: hidden;
+  width: 100dvw;
 }
 
 .bg {
@@ -89,7 +91,7 @@ const closeMenu = () => {
 
 .main {
   @include container;
-  padding: 2.5rem 0;
+  padding: 2rem 0 0 0;
 }
 
 .footer {

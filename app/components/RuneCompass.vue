@@ -212,6 +212,21 @@ onBeforeUnmount(() => {
   right: 10px;
   z-index: 10;
   cursor: pointer;
+  border-radius: 100%;
+  background: $ink-900;
+  padding: .3rem .3rem 0 .3rem;
+  box-shadow:
+      /* outer bloom */
+      0 0 22px rgba($accent-500, 0.22),
+      0 0 48px rgba($accent-500, 0.12),
+
+        /* elevation */
+      0 14px 34px rgba(0, 0, 0, 0.42),
+
+        /* subtle inner bevel */
+      inset 0 1px 0 rgba(255, 255, 255, 0.10),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .arcane-compass__svg {

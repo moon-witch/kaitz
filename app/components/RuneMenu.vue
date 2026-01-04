@@ -17,7 +17,7 @@ const items = [
   { label: "News",    to: "/news",   x: "-85px",  y: "8px"  },
   { label: "Autor",    to: "/about",  x: "-125px", y: "-31px"  },
   { label: "Stories", to: "/stories",x: "-155px", y: "-75px"  },
-  { label: "Tagebuch",to: "/diary",  x: "-176px", y: "-120px" },
+  { label: "Tagebuch",to: "/diary",  x: "-160px", y: "-122px" },
 ] as const;
 
 

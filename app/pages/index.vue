@@ -1,64 +1,80 @@
 <script setup lang="ts">
-const { data: news, error: newsError } = useNews();
-const { data: diary, error: diaryError } = useDiary();
-const { data: stories, error: storiesError } = useStories();
+import FeaturedStoryPedestal from "~/components/hall/FeaturedStoryPedestal.vue";
+import DiaryLectern from "~/components/hall/DiaryLectern.vue";
+import NewsNoticeBoard from "~/components/hall/NewsNoticeBoard.vue";
+import ThemesShelf from "~/components/hall/ThemesShelf.vue";
+
+const { data: news } = await useAsyncData("news", () => $fetch("/api/news"));
+const { data: diary } = await useAsyncData("diary", () => $fetch("/api/diary"));
+const { data: stories } = await useAsyncData("stories", () => $fetch("/api/stories"));
+const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"));
 </script>
 
 <template>
-  <div class="grid">
-    <ParchmentFrame>
-      <h2 class="h2">News</h2>
-      <div class="list">
-        <div v-for="n in news?.slice(0, 5)" :key="n.id" class="item">
-          <NuxtLink :to="`/news/${n.slug}`">{{ n.title }}</NuxtLink>
-        </div>
-      </div>
-    </ParchmentFrame>
+  <section class="hall">
+    <div class="library-background">
+      <img src="~/assets/images/library.jpg" alt="Library background" />
+    </div>
+    <HallScene>
+      <HallHeader />
 
-    <ParchmentFrame>
-      <h2 class="h2">Tagebuch</h2>
-      <div class="list">
-        <div v-if="diary?.[0]" class="item">
-          <NuxtLink :to="`/diary/${diary[0].slug}`">{{ diary[0].title }}</NuxtLink>
-        </div>
+      <div class="hall__grid">
+        <FeaturedStoryPedestal class="hall__pedestal" :stories="stories" />
+        <DiaryLectern class="hall__lectern" :entries="diary" />
+        <NewsNoticeBoard class="hall__board" :news="news" />
       </div>
-    </ParchmentFrame>
-
-    <ParchmentFrame>
-      <h2 class="h2">Stories</h2>
-      <div class="list">
-        <div v-for="s in stories?.slice(0, 5)" :key="s.id" class="item">
-          <NuxtLink :to="`/story/${s.slug}`">{{ s.title }}</NuxtLink>
-        </div>
-      </div>
-    </ParchmentFrame>
-  </div>
+    </HallScene>
+  </section>
 </template>
 
 <style scoped lang="scss">
-.grid {
-  display: grid;
-  gap: 1.5rem;
+.library-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.2;
+  }
+}
+.hall {
+  padding: 1.25rem 0 2rem;
+}
+
+.hall__grid {
+  display: grid;
+  gap: 1.25rem;
+
+  @media (min-width: 900px) {
+    grid-template-columns: 1.15fr 0.85fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "pedestal board"
+      "lectern  board";
   }
 }
 
-.h2 {
-  font-size: 1.1rem;
-  letter-spacing: 0.04em;
-  margin: 0;
+/* Map components to areas on wide screens */
+.hall__pedestal { grid-area: pedestal; }
+.hall__lectern { grid-area: lectern; }
+.hall__board { grid-area: board; }
+
+@media (min-width: 900px) {
+  .hall__pedestal { transform: translateY(10px); }
+  .hall__board { transform: translateY(-6px); }
+  .hall__lectern { transform: translateY(18px); }
 }
 
-.list {
-  margin-top: 1rem;
-  font-family: $font-sans;
-  font-size: 0.95rem;
-}
-
-.item {
-  padding: 0.35rem 0;
-  opacity: 0.9;
+.hall::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 -80px 0;
+  height: 240px;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05), transparent 60%);
+  opacity: 0.25;
+  pointer-events: none;
 }
 </style>
