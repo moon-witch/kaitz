@@ -1,0 +1,16 @@
+@use "./variables" as *;
+
+@mixin container {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@mixin subtle-border {
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+@mixin glass {
+  background: rgba(9,5,17,0.40);
+  backdrop-filter: blur(10px);
+}

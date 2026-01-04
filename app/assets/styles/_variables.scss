@@ -1,12 +1,27 @@
-$purple: #2c1a3c;
-$white: #ECE4F4;
-$gold: #D4AF37;
+// Color tokens
+$ink-950: #090511;
+$ink-900: #12081f;
+$ink-800: #1a0c2c;
 
-$deep-violet: #2b0f3f;
-$magenta-glow: #b042c9;
-$moon-silver: #d6d6e6;
-$parchment-beige: #e8dcc4;
+$parchment-50: #f5efe3;
+$parchment-100: #e8dcc4;
 
+$moon-100: #d6d6e6;
+$accent-500: #b042c9;
+
+// Typography
+$font-serif: 'Cormorant Garamond', serif;
+$font-sans: sans-serif;
+
+// Layout
+$max-width: 72rem; // ~1152px
+$radius-frame: 20px;
+$shadow-soft: 0 12px 40px rgba(0,0,0,0.35);
+
+// Z-layers
+$z-bg: -10;
+$z-header: 40;
+
+// Other
 $transition: 0.2s ease-in-out;
 
-$radius: 4px;
