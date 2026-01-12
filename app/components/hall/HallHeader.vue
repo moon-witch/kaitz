@@ -30,13 +30,14 @@ defineProps<{
   font-size: 1.6rem;
   letter-spacing: 0.03em;
   margin: 0;
+  justify-self: flex-start;
 }
 
 .hallHeader__sub {
   margin: 0.35rem 0 0;
   opacity: 0.78;
-  max-width: 52ch;
-  width: 60%;
+  justify-self: flex-start;
+  max-width: 30ch;
 }
 
 .hallHeader__hint {

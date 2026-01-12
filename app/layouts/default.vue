@@ -40,7 +40,7 @@ const closeMenu = () => {
 
 <style scoped lang="scss">
 .app {
-  min-height: 100vh;
+  height: 100dvh;
   overflow-x: hidden;
   width: 100dvw;
 }
@@ -97,6 +97,10 @@ const closeMenu = () => {
 .footer {
   opacity: 0.7;
   font-size: 0.9rem;
+
+  @media (max-width: 700px) {
+    padding: 1rem;
+  }
 
   &__inner {
     @include container;

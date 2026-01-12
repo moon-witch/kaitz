@@ -12,55 +12,107 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
 
 <template>
   <section class="hall">
-    <div class="library-background">
-      <img src="~/assets/images/library.jpg" alt="Library background" />
+    <div class="library-background" aria-hidden="true">
+      <img src="~/assets/images/library.jpg" alt="" />
     </div>
+
     <HallScene>
       <HallHeader />
 
       <div class="hall__grid">
         <FeaturedStoryPedestal class="hall__pedestal" :stories="stories" />
-        <DiaryLectern class="hall__lectern" :entries="diary" />
         <NewsNoticeBoard class="hall__board" :news="news" />
+        <DiaryLectern class="hall__lectern" :entries="diary" />
       </div>
+
     </HallScene>
   </section>
 </template>
 
 <style scoped lang="scss">
+.hall {
+  position: relative; /* required for background layer */
+  padding: 1rem 1rem 2rem;
+
+  @media (min-width: 600px) {
+    padding: 1.1rem 1rem 2.2rem;
+  }
+
+  @media (min-width: 900px) {
+    padding: 1.25rem 1rem 2rem;
+  }
+}
+
 .library-background {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -1;
+  overflow: hidden;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.2;
+
+    /* slightly stronger on mobile so it reads as "place" */
+    opacity: 0.28;
+
+    @media (min-width: 600px) {
+      opacity: 0.24;
+    }
+
+    @media (min-width: 900px) {
+      opacity: 0.20;
+    }
   }
 }
-.hall {
-  padding: 1.25rem 0 2rem;
-}
 
+/* MOBILE FIRST: single column */
 .hall__grid {
   display: grid;
-  gap: 1.25rem;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "pedestal"
+    "board"
+    "lectern";
+  gap: 1rem;
 
+  /* Tablet: 2 columns, lectern spans full width */
+  @media (min-width: 720px) {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "pedestal board"
+      "lectern  lectern";
+    gap: 1.15rem;
+  }
+
+  /* Desktop: your original composition */
   @media (min-width: 900px) {
     grid-template-columns: 1.15fr 0.85fr;
     grid-template-rows: auto auto;
     grid-template-areas:
       "pedestal board"
       "lectern  board";
+    gap: 1.25rem;
   }
 }
 
-/* Map components to areas on wide screens */
+/* Area mapping */
 .hall__pedestal { grid-area: pedestal; }
+.hall__board { grid-area: board;}
 .hall__lectern { grid-area: lectern; }
-.hall__board { grid-area: board; }
+
+/* Remove hardcoded spacing that breaks mobile */
+@media (min-width: 720px) {
+  .hall__board { margin-top: 3rem; }
+}
+
+/* Offsets only on desktop (otherwise it looks broken when stacked) */
+.hall__pedestal,
+.hall__board,
+.hall__lectern {
+  transform: none;
+}
 
 @media (min-width: 900px) {
   .hall__pedestal { transform: translateY(10px); }
@@ -68,13 +120,16 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
   .hall__lectern { transform: translateY(18px); }
 }
 
-.hall::before {
-  content: "";
-  position: absolute;
-  inset: auto 0 -80px 0;
-  height: 240px;
-  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.05), transparent 60%);
-  opacity: 0.25;
-  pointer-events: none;
+/* Themes shelf spacing */
+.hall__shelf {
+  margin-top: 1.15rem;
+
+  @media (min-width: 720px) {
+    margin-top: 1.25rem;
+  }
+
+  @media (min-width: 900px) {
+    margin-top: 1.35rem;
+  }
 }
 </style>

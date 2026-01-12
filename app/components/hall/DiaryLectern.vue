@@ -166,15 +166,6 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
   overflow: hidden;
 }
 
-/* Fade that matches parchment more than the page background */
-.lectern__fade {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 5.8rem;
-  background: linear-gradient(to bottom, rgba(10,6,18,0.25), rgba(0,0,0,0));
-  pointer-events: none;
-}
-
 /* Decorative footer rule – gives “archival manuscript” finishing */
 .lectern__footer {
   margin-top: 0.9rem;

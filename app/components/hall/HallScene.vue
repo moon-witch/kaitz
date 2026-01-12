@@ -1,6 +1,5 @@
 <template>
   <div class="scene">
-    <div class="scene__vignette" aria-hidden="true"></div>
     <div class="scene__shafts" aria-hidden="true"></div>
     <div class="scene__fog" aria-hidden="true"></div>
     <div class="scene__motes" aria-hidden="true"></div>
