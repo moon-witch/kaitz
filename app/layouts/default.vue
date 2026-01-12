@@ -30,7 +30,7 @@ const closeMenu = () => {
 
     <footer class="footer">
       <div class="footer__inner">
-        <NuxtLink to="/about">Über</NuxtLink>
+        <NuxtLink to="/about">Über den Autor</NuxtLink>
         <NuxtLink to="/imprint">Impressum</NuxtLink>
         <NuxtLink to="/privacy">Datenschutz</NuxtLink>
       </div>
@@ -97,14 +97,17 @@ const closeMenu = () => {
 .footer {
   opacity: 0.7;
   font-size: 0.9rem;
+  position: absolute;
+  bottom: .5rem;
+  left: 1.5rem;
 
-  @media (max-width: 700px) {
+  @media (min-width: 700px) {
     padding: 1rem;
   }
 
   &__inner {
     @include container;
-    padding: 2.5rem 0;
+    padding: 0;
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
