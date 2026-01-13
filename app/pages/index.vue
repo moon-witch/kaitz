@@ -50,7 +50,7 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
   overflow: hidden;
 
   img {
-    width: 100%;
+    width: auto;
     height: 100%;
     object-fit: cover;
 

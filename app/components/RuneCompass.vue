@@ -205,6 +205,7 @@ onBeforeUnmount(() => {
 .arcane-compass {
   width: fit-content;
   height: fit-content;
+  -webkit-tap-highlight-color: transparent;
   max-width: 360px;
   aspect-ratio: 1 / 1;
   position: fixed;
