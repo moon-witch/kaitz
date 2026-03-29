@@ -50,12 +50,10 @@ function animateIn() {
   // Ensure we start hidden then animate to visible
   for (const el of itemEls.value) {
     el.style.opacity = "0";
-    el.style.setProperty("--s", "0.92");
   }
 
   animate(itemEls.value, {
     opacity: [0, 1],
-    "--s": [0.92, 1],
     duration: 260,
     delay: stagger(35),
     ease: "outCubic",
@@ -79,13 +77,11 @@ watch(
       // Ensure starting state (covers HMR / re-open edge cases)
       for (const el of els) {
         el.style.opacity = "0";
-        el.style.setProperty("--s", "0.92");
       }
 
       // Stagger in
       animate(els, {
         opacity: [0, 1],
-        "--s": [0.92, 1],
         duration: 320,
         delay: stagger(55),
         ease: "outCubic",
@@ -146,7 +142,6 @@ watch(
   width: 0;
   height: 0;
   pointer-events: none; /* only items are clickable */
-  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.35));
 }
 
 /* Item */
@@ -219,11 +214,12 @@ watch(
       0 0 10px rgba($accent-500, 0.18),
       0 1px 0 rgba(0, 0, 0, 0.35);
 
+  will-change: opacity;
+
   /* Smooth, “alive” transitions */
   transition:
       box-shadow 420ms ease,
-      background 420ms ease,
-      transform 420ms ease;
+      background 420ms ease;
 
   /* Decorative pseudo-elements */
   &::before,

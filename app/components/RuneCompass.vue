@@ -198,6 +198,17 @@ onBeforeUnmount(() => {
 <template>
   <div class="arcane-compass" aria-hidden="true" @click="handleClick">
     <CompassSvg ref="svgComp" class="arcane-compass__svg" />
+    <svg class="arcane-compass__label" viewBox="0 0 100 100" aria-hidden="true">
+      <defs>
+        <path
+          id="kaitz-menu-arc"
+          d="M 50 3 A 47 47 0 0 1 97 50 A 47 47 0 0 1 50 97 A 47 47 0 0 1 3 50 A 47 47 0 0 1 50 3"
+        />
+      </defs>
+      <text>
+        <textPath href="#kaitz-menu-arc" startOffset="12.5%" text-anchor="middle">MENÜ</textPath>
+      </text>
+    </svg>
   </div>
 </template>
 
@@ -234,6 +245,22 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+
+.arcane-compass__label {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+
+  text {
+    font-family: $font-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    fill: $moon-100;
+    opacity: 0.5;
+  }
 }
 </style>
 
