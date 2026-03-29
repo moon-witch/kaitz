@@ -1,17 +1,16 @@
-import { directusFetch, publishedFilter } from "../utils/directus";
+import { directusFetch } from "../utils/directus";
 
 export default defineEventHandler(async () => {
     try {
         const res = await directusFetch<{ data: any[] }>("/items/diary_entries", {
             query: {
-                ...publishedFilter(),
                 sort: "-date_created",
-                limit: 10,
+                limit: 50,
                 fields: "id,title,slug,content,featured,date_created",
             },
         });
 
-        return res.data;
+        return res.data ?? [];
     } catch (err: any) {
         throw createError({
             statusCode: 500,

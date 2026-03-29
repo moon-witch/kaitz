@@ -1,0 +1,909 @@
+<script setup lang="ts">
+import { useDiary } from "~/composables/useDiary";
+import { animate } from "animejs/animation";
+
+useSeoMeta({ title: "Tagebuch — Library of Kaitz" });
+
+const { data: entries, pending } = await useDiary();
+
+type Mode = "artisan" | "structured";
+const mode = ref<Mode>("artisan");
+
+// ─────────────────────────────────────────────────────────────────────
+//  ARTISAN MODE
+// ─────────────────────────────────────────────────────────────────────
+const activeSlug  = ref("");
+const isAnimating = ref(false);
+const cardEls: Record<string, HTMLElement> = {};
+
+interface Pos { x: number; y: number; rotate: number }
+const scatter = ref<Record<string, Pos>>({});
+
+const CARD_W  = 190;
+const CARD_H  = 68;  // estimated collapsed card height
+const EXP_MAX = 580;
+
+function vw() { return window.innerWidth; }
+function vh() { return window.innerHeight; }
+function expW() { return Math.min(EXP_MAX, vw() - 32); }
+
+function centerPos(): Pos {
+  return {
+    x: (vw() - expW()) / 2,
+    y: Math.max(165, (vh() - 520) / 2),
+    rotate: 0,
+  };
+}
+
+// Push a point out of the center expanded-card zone
+function pushOutOfCenter(x: number, y: number): { x: number; y: number } {
+  const W  = vw();
+  const eW = expW();
+  const cp = centerPos();
+  const buf = 30;
+  const zL = cp.x - buf;
+  const zR = cp.x + eW + buf;
+  const zT = cp.y - buf;
+  const zB = cp.y + 540;       // approx expanded card height
+
+  // Collapsed card footprint: CARD_W × ~70px
+  const overlapH = x + CARD_W > zL && x < zR;
+  const overlapV = y + 70 > zT && y < zB;
+  if (overlapH && overlapV) {
+    const roomLeft  = zL - CARD_W - 52;
+    const roomRight = W - CARD_W - 130 - zR;
+    if (roomLeft >= roomRight) {
+      return { x: Math.max(52, zL - CARD_W - 10), y };
+    } else {
+      return { x: Math.min(W - CARD_W - 130, zR + 10), y };
+    }
+  }
+  return { x, y };
+}
+
+// Iterative separation: push overlapping cards apart until no pair exceeds 10% area overlap
+function separateCards(res: Record<string, Pos>, slugs: string[]): void {
+  const W = vw(), H = vh();
+  const pX = 52, xMax = W - CARD_W - 130;
+  const yMin = 165, yMax = H - 90;
+  const areaLimit = CARD_W * CARD_H * 0.10; // 10% of one card's area
+
+  for (let iter = 0; iter < 40; iter++) {
+    let dirty = false;
+    for (let i = 0; i < slugs.length; i++) {
+      for (let j = i + 1; j < slugs.length; j++) {
+        const pi = res[slugs[i]];
+        const pj = res[slugs[j]];
+
+        const ox = Math.min(pi.x + CARD_W, pj.x + CARD_W) - Math.max(pi.x, pj.x);
+        const oy = Math.min(pi.y + CARD_H, pj.y + CARD_H) - Math.max(pi.y, pj.y);
+
+        if (ox <= 0 || oy <= 0 || ox * oy <= areaLimit) continue;
+
+        dirty = true;
+        // Reduce overlap on the axis that needs less movement
+        const reduceX = ox - areaLimit / oy;
+        const reduceY = oy - areaLimit / ox;
+        const half = 0.5;
+
+        if (reduceX <= reduceY) {
+          const push = reduceX * half + 1;
+          if (pj.x >= pi.x) { pi.x -= push; pj.x += push; }
+          else               { pi.x += push; pj.x -= push; }
+        } else {
+          const push = reduceY * half + 1;
+          if (pj.y >= pi.y) { pi.y -= push; pj.y += push; }
+          else               { pi.y += push; pj.y -= push; }
+        }
+
+        pi.x = Math.max(pX, Math.min(xMax, pi.x));
+        pi.y = Math.max(yMin, Math.min(yMax, pi.y));
+        pj.x = Math.max(pX, Math.min(xMax, pj.x));
+        pj.y = Math.max(yMin, Math.min(yMax, pj.y));
+      }
+    }
+    if (!dirty) break;
+  }
+}
+
+function computeScatter() {
+  if (!entries.value?.length) return;
+  const W = vw(), H = vh(), n = entries.value.length;
+  const cols = Math.max(2, Math.ceil(Math.sqrt(n * W / H)));
+  const pX = 52, pY = 165;
+  const xMax = W - CARD_W - 130;
+  const yMin = 165;
+  const yMax = H - 90;
+  const totalCols = Math.max(1, cols - 1);
+  const totalRows = Math.max(1, Math.ceil(n / cols) - 1 || 1);
+  const cW = (xMax - pX) / totalCols;
+  const cH = (yMax - pY) / totalRows;
+
+  const res: Record<string, Pos> = {};
+  entries.value.forEach((e, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const jX  = Math.sin(i * 2.399) * cW * 0.22;
+    const jY  = Math.cos(i * 1.618) * cH * 0.22;
+    let x = Math.max(pX, Math.min(xMax, pX + col * cW + jX));
+    let y = Math.max(yMin, Math.min(yMax, pY + row * cH + jY));
+    ({ x, y } = pushOutOfCenter(x, y));
+    res[e.slug] = { x, y, rotate: Math.sin(i * 1.309) * 11 };
+  });
+
+  const slugs = entries.value.map(e => e.slug);
+  separateCards(res, slugs);
+  scatter.value = res;
+}
+
+function setT(
+  el: HTMLElement,
+  x: number, y: number, r: number, w: number,
+  skX = 0, skY = 0, sx = 1, sy = 1,
+) {
+  el.style.transform = [
+    `translate(${x}px, ${y}px)`,
+    `rotate(${r}deg)`,
+    skX || skY ? `skewX(${skX}deg) skewY(${skY}deg)` : "",
+    sx !== 1 || sy !== 1 ? `scaleX(${sx}) scaleY(${sy})` : "",
+  ].filter(Boolean).join(" ");
+  el.style.width = `${w}px`;
+}
+
+function flyToCenter(slug: string): Promise<void> {
+  return new Promise(resolve => {
+    const el  = cardEls[slug];
+    const from = scatter.value[slug];
+    if (!el || !from) { resolve(); return; }
+
+    const to  = centerPos();
+    const toW = expW();
+    const s   = { x: from.x, y: from.y, r: from.rotate, w: CARD_W };
+    el.style.zIndex = "8";
+
+    animate(s, {
+      x: to.x, y: to.y, r: 0, w: toW,
+      duration: 580,
+      ease: "outCubic",
+      onUpdate: () => setT(el, s.x, s.y, s.r, s.w),
+      complete: resolve,
+    });
+  });
+}
+
+function flyBack(slug: string): Promise<void> {
+  return new Promise(resolve => {
+    const el = cardEls[slug];
+    const to = scatter.value[slug];
+    if (!el || !to) { resolve(); return; }
+
+    const cp = centerPos();
+    // s.p drives deformation: 0 = no deform, peaks mid-flight, back to 0 at end
+    const s  = { x: cp.x, y: cp.y, r: 0, w: expW(), p: 0 };
+    el.style.zIndex = "3";
+
+    animate(s, {
+      x: to.x, y: to.y, r: to.rotate, w: CARD_W, p: 1,
+      duration: 600,
+      ease: "inOutCubic",
+      onUpdate: () => {
+        const peak = Math.sin(s.p * Math.PI); // arc: 0 → 1 → 0
+        setT(el, s.x, s.y, s.r, s.w, peak * 20, peak * -7, 1, 1 - peak * 0.32);
+      },
+      complete: () => { el.style.zIndex = "1"; resolve(); },
+    });
+  });
+}
+
+async function activateEntry(slug: string) {
+  if (isAnimating.value || slug === activeSlug.value) return;
+  isAnimating.value = true;
+  const prev = activeSlug.value;
+  activeSlug.value = slug;
+  await (prev
+    ? Promise.all([flyBack(prev), flyToCenter(slug)])
+    : flyToCenter(slug)
+  );
+  isAnimating.value = false;
+}
+
+function initArtisan() {
+  computeScatter();
+  nextTick(() => {
+    for (const e of entries.value ?? []) {
+      const el  = cardEls[e.slug];
+      const pos = scatter.value[e.slug];
+      if (el && pos) setT(el, pos.x, pos.y, pos.rotate, CARD_W);
+    }
+    const first = entries.value?.[0]?.slug;
+    if (first) activateEntry(first);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  STRUCTURED MODE
+// ─────────────────────────────────────────────────────────────────────
+const structuredActive = ref("");
+watch(entries, v => {
+  if (v?.length && !structuredActive.value) structuredActive.value = v[0].slug;
+}, { immediate: true });
+
+// ─────────────────────────────────────────────────────────────────────
+//  SHARED
+// ─────────────────────────────────────────────────────────────────────
+function formatDate(d?: string | null) {
+  if (!d) return "";
+  return new Date(d).toLocaleDateString("de-DE", {
+    day: "numeric", month: "long", year: "numeric",
+  });
+}
+
+onMounted(() => {
+  if (mode.value === "artisan") nextTick(initArtisan);
+});
+
+watch(mode, val => {
+  activeSlug.value = "";
+  if (val === "artisan") nextTick(initArtisan);
+});
+</script>
+
+<template>
+  <section class="diary-page" :class="{ 'diary-page--artisan': mode === 'artisan' }">
+    <HallScene>
+
+      <!-- ── ARTISAN MODE ───────────────────────────────────────────── -->
+      <template v-if="mode === 'artisan'">
+
+        <!-- Floating page header -->
+        <div class="artisan-head" aria-label="Tagebuch">
+          <p class="artisan-head__eyebrow">Archiv des Schreibens</p>
+          <h1 class="artisan-head__title">Tagebuch</h1>
+          <button class="mode-btn" @click="mode = 'structured'">
+            <span class="mode-btn__icon" aria-hidden="true">⊞</span>
+            Geordnet
+          </button>
+        </div>
+
+        <div v-if="pending" class="artisan-status">Lade Einträge…</div>
+        <p v-else-if="!entries?.length" class="artisan-status">Noch keine Einträge vorhanden.</p>
+
+        <!-- Scattered cards stage -->
+        <div v-else class="artisan-stage">
+          <div
+            v-for="entry in entries"
+            :key="entry.slug"
+            :ref="(el: any) => { if (el) cardEls[entry.slug] = el as HTMLElement }"
+            class="artisan-card"
+            :class="{ 'is-active': entry.slug === activeSlug }"
+            @click="activateEntry(entry.slug)"
+          >
+            <div class="artisan-card__hd">
+              <time class="artisan-card__date">{{ formatDate(entry.date_created) }}</time>
+              <h2 class="artisan-card__title">{{ entry.title }}</h2>
+            </div>
+            <div class="artisan-card__body-wrap">
+              <div class="artisan-card__body-inner">
+                <div class="artisan-card__divider" aria-hidden="true"></div>
+                <div class="artisan-card__body prose" v-html="entry.content" />
+                <footer class="artisan-card__foot">
+                  <NuxtLink
+                    :to="`/diary/${entry.slug}`"
+                    class="artisan-card__link"
+                    @click.stop
+                  >Vollständig lesen</NuxtLink>
+                </footer>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </template>
+
+      <!-- ── STRUCTURED MODE ──────────────────────────────────────────── -->
+      <template v-else>
+        <div class="diary-page__inner">
+          <header class="diary-page__head">
+            <p class="diary-page__eyebrow">Archiv des Schreibens</p>
+            <h1 class="diary-page__title">Tagebuch</h1>
+            <button class="mode-btn mode-btn--light" @click="mode = 'artisan'">
+              <span class="mode-btn__icon" aria-hidden="true">✦</span>
+              Artisan
+            </button>
+          </header>
+
+          <div v-if="pending" class="diary-page__status">Lade Einträge…</div>
+
+          <div v-else-if="entries?.length" class="tome">
+            <div
+              v-for="entry in entries"
+              :key="entry.slug"
+              class="tome__entry"
+              :class="{ 'is-active': entry.slug === structuredActive }"
+              @click="structuredActive = entry.slug"
+            >
+              <div class="tome__hd">
+                <time class="tome__date">{{ formatDate(entry.date_created) }}</time>
+                <h2 class="tome__title">{{ entry.title }}</h2>
+              </div>
+              <div class="tome__body-wrap">
+                <div class="tome__body-inner">
+                  <div class="tome__divider" aria-hidden="true"></div>
+                  <div class="tome__body prose" v-html="entry.content" />
+                  <footer class="tome__foot">
+                    <NuxtLink
+                      :to="`/diary/${entry.slug}`"
+                      class="tome__read-link"
+                      @click.stop
+                    >Vollständig lesen</NuxtLink>
+                  </footer>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p v-else class="diary-page__status">Noch keine Einträge vorhanden.</p>
+        </div>
+      </template>
+
+    </HallScene>
+  </section>
+</template>
+
+<style scoped lang="scss">
+
+// ── Page shell ────────────────────────────────────────────────────────────────
+
+.diary-page {
+  min-height: 100vh;
+
+  &--artisan {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+// ── Mode toggle button ────────────────────────────────────────────────────────
+
+.mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  margin-top: 0.9rem;
+  padding: 0.28rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba($moon-100, 0.18);
+  border-radius: 2px 3px 2px 3px / 3px 2px 3px 2px;
+  color: rgba($moon-100, 0.42);
+  font-family: $font-serif;
+  font-size: 0.70rem;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+
+  &:hover {
+    color: rgba($moon-100, 0.75);
+    border-color: rgba($moon-100, 0.38);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  &--light {
+    color: rgba(55, 28, 8, 0.45);
+    border-color: rgba(100, 62, 18, 0.25);
+    background: rgba(200, 150, 80, 0.06);
+
+    &:hover {
+      color: rgba(55, 28, 8, 0.75);
+      border-color: rgba(100, 62, 18, 0.45);
+      background: rgba(200, 150, 80, 0.12);
+    }
+  }
+}
+
+.mode-btn__icon {
+  font-style: normal;
+  opacity: 0.7;
+}
+
+// ── Artisan floating header ───────────────────────────────────────────────────
+
+.artisan-head {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  text-align: center;
+  padding: 1.6rem 1.5rem 1.2rem;
+  pointer-events: none;
+
+  // Fade the background beneath the header
+  background: linear-gradient(
+    to bottom,
+    rgba($ink-950, 0.72) 0%,
+    rgba($ink-950, 0.0) 100%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+
+  .mode-btn { pointer-events: auto; }
+}
+
+.artisan-head__eyebrow {
+  font-family: $font-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba($moon-100, 0.34);
+  font-style: italic;
+  margin: 0 0 0.4rem;
+}
+
+.artisan-head__title {
+  font-family: $font-serif;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  color: $moon-100;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin: 0;
+  @include inscription-glow(5s, 0s);
+}
+
+.artisan-status {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-serif;
+  color: rgba($moon-100, 0.45);
+  font-style: italic;
+}
+
+// ── Artisan stage ─────────────────────────────────────────────────────────────
+
+.artisan-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none; // stage itself non-interactive; cards opt-in below
+}
+
+// ── Artisan card ──────────────────────────────────────────────────────────────
+
+.artisan-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 190px; // overridden by JS
+  will-change: transform;
+  cursor: pointer;
+  pointer-events: auto;
+
+  // Parchment base
+  background: linear-gradient(
+    158deg,
+    #d4b483 0%,
+    #c9a870 30%,
+    #bb9558 65%,
+    #a87840 100%
+  );
+  border: 1px solid rgba(100, 62, 18, 0.38);
+  border-radius: 4px 2px 5px 2px / 2px 4px 2px 5px;
+  padding: 0.62rem 0.85rem;
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.42),
+    0 1px 2px  rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 240, 200, 0.18);
+
+  // Paper grain overlay
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(140, 90, 30, 0.05) 3px,
+      rgba(140, 90, 30, 0.05) 4px
+    );
+  }
+
+  // Candlelight shimmer (active only)
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(
+      112deg,
+      transparent 20%,
+      rgba(255, 235, 160, 0.00) 36%,
+      rgba(255, 235, 160, 0.09) 50%,
+      rgba(255, 235, 160, 0.00) 64%,
+      transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  transition: box-shadow 0.35s ease;
+
+  &:hover:not(.is-active) {
+    box-shadow:
+      0 5px 16px rgba(0, 0, 0, 0.50),
+      0 1px 3px  rgba(0, 0, 0, 0.26);
+  }
+
+  &.is-active {
+    cursor: default;
+    box-shadow:
+      inset 0 0 50px rgba(60, 30, 8, 0.28),
+      inset 0 2px 0   rgba(255, 248, 220, 0.40),
+      0 12px 40px     rgba(0, 0, 0, 0.60),
+      0 3px 8px       rgba(0, 0, 0, 0.32);
+
+    &::after { opacity: 1; }
+  }
+}
+
+// ── Artisan card: header ──────────────────────────────────────────────────────
+
+.artisan-card__hd {
+  position: relative;
+  z-index: 2;
+}
+
+.artisan-card__date {
+  display: block;
+  font-family: $font-serif;
+  font-size: 0.70rem;
+  color: rgba(55, 28, 8, 0.50);
+  letter-spacing: 0.10em;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .is-active & {
+    color: rgba(55, 28, 8, 0.56);
+    margin-bottom: 0.2rem;
+  }
+}
+
+.artisan-card__title {
+  font-family: $font-serif;
+  font-weight: 700;
+  color: $ink-text;
+  margin: 0.12rem 0 0;
+  line-height: 1.2;
+  font-size: 0.86rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: font-size 0.4s ease;
+
+  .is-active & {
+    font-size: clamp(1.1rem, 2.6vw, 1.42rem);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}
+
+// ── Artisan card: expandable body ─────────────────────────────────────────────
+
+.artisan-card__body-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.44s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .is-active & {
+    grid-template-rows: 1fr;
+  }
+}
+
+.artisan-card__body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.artisan-card__divider {
+  height: 1px;
+  background: rgba(100, 62, 18, 0.28);
+  margin: 0.72rem 0 0.85rem;
+}
+
+.artisan-card__body {
+  font-family: $font-serif;
+  font-size: 0.91rem;
+  line-height: 1.78;
+  color: $ink-text;
+  position: relative;
+  z-index: 2;
+
+  &.prose {
+    :deep(p)            { margin: 0 0 0.9em; }
+    :deep(p:last-child) { margin-bottom: 0; }
+    :deep(em)           { font-style: italic; }
+    :deep(strong)       { font-weight: 700; }
+    :deep(h3)           { margin: 1.2em 0 0.4em; font-size: 1.05em; }
+  }
+}
+
+.artisan-card__foot {
+  margin-top: 0.85rem;
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 2;
+}
+
+.artisan-card__link {
+  font-family: $font-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.10em;
+  font-style: italic;
+  color: rgba(55, 28, 8, 0.58);
+  text-decoration: none;
+  transition: color $transition;
+
+  &::after { content: ' →'; font-style: normal; }
+  &:hover  { color: rgba($accent-500, 0.85); }
+}
+
+// ── Structured mode: page shell ───────────────────────────────────────────────
+
+.diary-page__inner {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 8rem;
+
+  @media (max-width: $bp-tablet) {
+    padding: 2.5rem 1rem 6rem;
+  }
+}
+
+.diary-page__head {
+  text-align: center;
+  margin-bottom: 2.8rem;
+}
+
+.diary-page__eyebrow {
+  font-family: $font-serif;
+  font-size: 0.76rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba($moon-100, 0.38);
+  font-style: italic;
+  margin: 0 0 0.5rem;
+}
+
+.diary-page__title {
+  font-family: $font-serif;
+  font-size: clamp(2rem, 5vw, 2.9rem);
+  color: $moon-100;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin: 0;
+  @include inscription-glow(5s, 0s);
+}
+
+.diary-page__status {
+  text-align: center;
+  font-family: $font-serif;
+  color: rgba($moon-100, 0.45);
+  font-style: italic;
+  padding: 3rem 0;
+}
+
+// ── Tome (structured mode) ────────────────────────────────────────────────────
+
+.tome {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tome__entry {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+
+  background: linear-gradient(
+    158deg,
+    #d4b483 0%,
+    #c9a870 30%,
+    #bb9558 65%,
+    #a87840 100%
+  );
+  border: 1px solid rgba(100, 62, 18, 0.40);
+  border-radius: 4px 2px 5px 2px / 2px 4px 2px 5px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(140, 90, 30, 0.05) 3px,
+      rgba(140, 90, 30, 0.05) 4px
+    );
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(
+      108deg,
+      transparent 20%,
+      rgba(255, 235, 160, 0.00) 34%,
+      rgba(255, 235, 160, 0.07) 50%,
+      rgba(255, 235, 160, 0.00) 66%,
+      transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  & + & { margin-top: 5px; }
+
+  padding: 0.72rem 1.15rem;
+  box-shadow:
+    0 2px 8px  rgba(0, 0, 0, 0.38),
+    0 1px 2px  rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 240, 200, 0.18);
+  filter: brightness(0.88) saturate(0.9);
+  transition: padding 0.45s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.45s ease, filter 0.45s ease;
+
+  &:hover:not(.is-active) {
+    filter: brightness(0.95) saturate(0.95);
+    box-shadow:
+      0 4px 14px rgba(0, 0, 0, 0.44),
+      0 1px 3px  rgba(0, 0, 0, 0.26),
+      inset 0 1px 0 rgba(255, 240, 200, 0.22);
+  }
+
+  &.is-active {
+    cursor: default;
+    padding: 1.15rem 1.15rem 1.2rem;
+    filter: brightness(1) saturate(1);
+    box-shadow:
+      inset 0 0 45px rgba(60, 30, 8, 0.28),
+      inset 0 2px 0   rgba(255, 248, 220, 0.38),
+      0 10px 36px     rgba(0, 0, 0, 0.55),
+      0 2px 6px       rgba(0, 0, 0, 0.30);
+
+    &::after { opacity: 1; }
+  }
+}
+
+.tome__hd {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+
+  .is-active & { flex-direction: column; gap: 0.35rem; }
+}
+
+.tome__date {
+  font-family: $font-serif;
+  font-size: 0.76rem;
+  color: rgba(55, 28, 8, 0.55);
+  letter-spacing: 0.1em;
+  font-style: italic;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: font-size 0.45s ease, color 0.45s ease;
+
+  .is-active & { font-size: 0.78rem; color: rgba(55, 28, 8, 0.58); }
+}
+
+.tome__title {
+  font-family: $font-serif;
+  font-weight: 700;
+  color: $ink-text;
+  margin: 0;
+  line-height: 1.2;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: font-size 0.45s ease;
+
+  .is-active & {
+    font-size: clamp(1.2rem, 3vw, 1.55rem);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+  }
+}
+
+.tome__body-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .is-active & { grid-template-rows: 1fr; }
+}
+
+.tome__body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.tome__divider {
+  height: 1px;
+  background: rgba(100, 62, 18, 0.28);
+  margin: 0.85rem 0 1rem;
+}
+
+.tome__body {
+  font-family: $font-serif;
+  font-size: 0.97rem;
+  line-height: 1.82;
+  color: $ink-text;
+  position: relative;
+  z-index: 2;
+
+  &.prose {
+    :deep(p)            { margin: 0 0 0.9em; }
+    :deep(p:last-child) { margin-bottom: 0; }
+    :deep(em)           { font-style: italic; }
+    :deep(strong)       { font-weight: 700; }
+    :deep(h3)           { margin: 1.2em 0 0.4em; font-size: 1.05em; }
+  }
+}
+
+.tome__foot {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  z-index: 2;
+}
+
+.tome__read-link {
+  font-family: $font-serif;
+  font-size: 0.79rem;
+  letter-spacing: 0.1em;
+  font-style: italic;
+  color: rgba(55, 28, 8, 0.6);
+  text-decoration: none;
+  transition: color $transition;
+
+  &::after { content: ' →'; font-style: normal; }
+  &:hover  { color: rgba($accent-500, 0.85); }
+}
+
+// ── Reduced motion ────────────────────────────────────────────────────────────
+
+@media (prefers-reduced-motion: reduce) {
+  .artisan-card__body-wrap,
+  .artisan-card__title,
+  .tome__entry,
+  .tome__body-wrap,
+  .tome__title,
+  .tome__date {
+    transition: none;
+  }
+}
+
+</style>
