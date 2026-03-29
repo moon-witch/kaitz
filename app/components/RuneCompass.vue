@@ -245,19 +245,30 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .arcane-compass {
-  width: fit-content;
-  height: fit-content;
   -webkit-tap-highlight-color: transparent;
-  max-width: 360px;
   aspect-ratio: 1 / 1;
-  position: fixed;
-  top: 10px;
+  position: absolute;
+  top: 25px;
   right: 10px;
   z-index: 10;
   cursor: pointer;
   border-radius: 100%;
   background: none;
   padding: .3rem .3rem 0 .3rem;
+
+  // Full size on desktop
+  width: 100px;
+
+  // Smaller on mobile/tablet so it doesn't dominate the screen
+  @media (max-width: 720px) {
+    width: 70px;
+    top: 20px;
+    right: 6px;
+  }
+
+  @media (min-width: 721px) and (max-width: 1024px) {
+    width: 200px;
+  }
 }
 
 .arcane-compass__svg {

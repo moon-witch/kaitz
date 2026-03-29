@@ -11,6 +11,18 @@ const toggleMenu = () => {
 const closeMenu = () => {
   menuOpen.value = false;
 };
+
+const showScrollTop = ref(false);
+
+if (process.client) {
+  window.addEventListener("scroll", () => {
+    showScrollTop.value = window.scrollY > 300;
+  }, { passive: true });
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 </script>
 
 <template>
@@ -37,6 +49,17 @@ const closeMenu = () => {
         <NuxtLink to="/privacy">Datenschutz</NuxtLink>
       </div>
     </footer>
+
+    <Transition name="scrolltop">
+      <button
+        v-if="showScrollTop"
+        class="scroll-top"
+        aria-label="Zurück nach oben"
+        @click="scrollToTop"
+      >
+        <span class="scroll-top__arrow" aria-hidden="true"></span>
+      </button>
+    </Transition>
   </div>
 </template>
 
@@ -45,6 +68,9 @@ const closeMenu = () => {
   min-height: 100svh;
   overflow-x: hidden;
   width: 100dvw;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .bg {
@@ -105,22 +131,18 @@ const closeMenu = () => {
 .main {
   @include container;
   padding: 2rem 0 0 0;
+  flex: 1;
 }
 
 .footer {
-  opacity: 0.65;
+  position: relative;
+  margin-top: auto;
+  padding: 1.5rem 1.5rem 1rem;
   font-size: 0.88rem;
   font-family: $font-serif;
   font-style: italic;
-  position: absolute;
-  bottom: .5rem;
-  left: 1.5rem;
   letter-spacing: 0.02em;
-  color: rgba($moon-100, 0.65);
-
-  @media (min-width: 700px) {
-    padding: 1rem;
-  }
+  color: rgba($moon-100, 0.55);
 
   &__inner {
     @include container;
@@ -134,5 +156,64 @@ const closeMenu = () => {
     color: rgba($candle-bright, 0.90);
     opacity: 1;
   }
+}
+
+// ── Scroll-to-top ─────────────────────────────────────────────────────────────
+
+.scroll-top {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 20;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba($accent-500, 0.30);
+  background: rgba($ink-800, 0.82);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    0 0 14px rgba($accent-500, 0.18),
+    0 4px 16px rgba(0, 0, 0, 0.55);
+
+  transition:
+    background  220ms ease,
+    box-shadow  220ms ease,
+    border-color 220ms ease;
+
+  &:hover {
+    background: rgba($ink-800, 0.95);
+    border-color: rgba($accent-500, 0.60);
+    box-shadow:
+      0 0 22px rgba($accent-500, 0.35),
+      0 4px 20px rgba(0, 0, 0, 0.60);
+  }
+}
+
+.scroll-top__arrow {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-top:   1.5px solid rgba($moon-100, 0.80);
+  border-right: 1.5px solid rgba($moon-100, 0.80);
+  /* translateY first (screen space), then rotate — keeps it centered */
+  transform: translateY(2px) rotate(-45deg);
+}
+
+// Fade + slide transition
+.scrolltop-enter-active,
+.scrolltop-leave-active {
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+.scrolltop-enter-from,
+.scrolltop-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
 }
 </style>

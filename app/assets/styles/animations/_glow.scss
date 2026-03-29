@@ -1,0 +1,140 @@
+@use '../variables' as *;
+
+// ─── Glow & Arcane Light ──────────────────────────────────────────────────────
+// Magic light effects: sigil pulse, irregular flicker, inscription glow,
+// arcane charge burst. The irregularity is intentional — magical light
+// doesn't behave like ordinary light.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+
+// Sigil dot / gem — sharp burst, then slow fade back to rest
+@keyframes sigilPulse {
+  0%, 100% {
+    box-shadow:
+      0 0  8px rgba($accent-500, 0.45),
+      0 0  3px rgba($candle-bright, 0.18);
+    filter: brightness(1.00);
+  }
+  38% {
+    box-shadow:
+      0 0 18px rgba($accent-500, 0.90),
+      0 0 36px rgba($accent-500, 0.38),
+      0 0  9px rgba($candle-bright, 0.60);
+    filter: brightness(1.50);
+  }
+  55% {
+    box-shadow:
+      0 0 12px rgba($accent-500, 0.65),
+      0 0 20px rgba($accent-500, 0.22);
+    filter: brightness(1.20);
+  }
+}
+
+// Arcane flicker — irregular timing mimics magic fire, not candle
+@keyframes arcaneFlicker {
+  0%   { opacity: 1.00; filter: brightness(1.00); }
+  7%   { opacity: 0.86; filter: brightness(0.88); }
+  14%  { opacity: 0.98; filter: brightness(1.08); }
+  21%  { opacity: 0.78; filter: brightness(0.82); }
+  29%  { opacity: 0.94; filter: brightness(1.04); }
+  38%  { opacity: 1.00; filter: brightness(1.00); }
+  50%  { opacity: 0.82; filter: brightness(0.86); }
+  58%  { opacity: 0.96; filter: brightness(1.06); }
+  67%  { opacity: 0.88; filter: brightness(0.92); }
+  76%  { opacity: 1.00; filter: brightness(1.00); }
+  84%  { opacity: 0.74; filter: brightness(0.80); }
+  92%  { opacity: 0.97; filter: brightness(1.10); }
+  100% { opacity: 1.00; filter: brightness(1.00); }
+}
+
+// Inscription glow — text-shadow shifts direction as if lit from a moving source
+@keyframes inscriptionGlow {
+  0%, 100% {
+    text-shadow:
+      0    0   12px rgba($accent-500, 0.55),
+      0    0    4px rgba($accent-500, 0.28);
+  }
+  28% {
+    text-shadow:
+       2px  0  16px rgba($accent-500, 0.82),
+       1px  0   6px rgba($candle-bright, 0.48);
+  }
+  55% {
+    text-shadow:
+      0    0   10px rgba($accent-500, 0.45),
+      0    0    3px rgba($accent-500, 0.22);
+  }
+  78% {
+    text-shadow:
+      -2px  0  15px rgba($accent-500, 0.78),
+      -1px  0   6px rgba($candle-bright, 0.44);
+  }
+}
+
+// Arcane charge — builds up energy and releases in a burst (one-shot)
+// Great for hover activation, form submission, button clicks
+@keyframes arcaneCharge {
+  0%   { box-shadow: 0 0  0px rgba($accent-500, 0.00); filter: brightness(1.00); }
+  50%  { box-shadow: 0 0 18px rgba($accent-500, 0.40), 0 0  6px rgba($candle-bright, 0.20); filter: brightness(1.05); }
+  75%  { box-shadow: 0 0 38px rgba($accent-500, 0.80), 0 0 16px rgba($candle-bright, 0.55); filter: brightness(1.25); }
+  88%  { box-shadow: 0 0 12px rgba($accent-500, 0.25); filter: brightness(1.08); }
+  100% { box-shadow: 0 0  0px rgba($accent-500, 0.00); filter: brightness(1.00); }
+}
+
+// Wander glow — a soft light source drifts across the element's background
+// Used via background-position animation on an existing background-image gradient
+@keyframes wanderGlow {
+  0%   { background-position: 15% 20%; }
+  30%  { background-position: 72% 12%; }
+  65%  { background-position: 28% 78%; }
+  100% { background-position: 15% 20%; }
+}
+
+// Dark veil lift — for element entrances (opacity 0 → 1 with arcane color shift)
+@keyframes arcaneReveal {
+  0%   { opacity: 0; filter: brightness(0.6) saturate(0.5); }
+  60%  { opacity: 1; filter: brightness(1.1) saturate(1.2); }
+  100% { opacity: 1; filter: brightness(1.0) saturate(1.0); }
+}
+
+// ─── Mixins ───────────────────────────────────────────────────────────────────
+
+@mixin sigil-pulse($speed: 3.2s, $delay: 0s) {
+  animation: sigilPulse $speed ease-in-out $delay infinite;
+}
+
+// Smooth variant for ambient flicker (cards, panels lit by magic)
+@mixin arcane-flicker($speed: 5.5s, $delay: 0s) {
+  animation: arcaneFlicker $speed ease-in-out $delay infinite;
+}
+
+// Snappy variant for flames or active magical elements
+@mixin arcane-flicker-sharp($speed: 3.5s, $delay: 0s) {
+  animation: arcaneFlicker $speed linear $delay infinite;
+}
+
+@mixin inscription-glow($speed: 4s, $delay: 0s) {
+  animation: inscriptionGlow $speed ease-in-out $delay infinite;
+}
+
+// One-shot charge burst — add .anim-arcane-charge class via JS to replay
+@mixin arcane-charge($speed: 1.2s) {
+  animation: arcaneCharge $speed ease-out forwards;
+}
+
+@mixin arcane-reveal($speed: 0.8s, $delay: 0s) {
+  animation: arcaneReveal $speed ease-out $delay forwards;
+  opacity: 0; // start hidden before animation runs
+}
+
+// ─── Utility classes ──────────────────────────────────────────────────────────
+
+.anim-sigil-pulse      { @include sigil-pulse(); }
+.anim-sigil-pulse--d1  { @include sigil-pulse($delay: 0.7s); }
+.anim-sigil-pulse--d2  { @include sigil-pulse($delay: 1.4s); }
+
+.anim-arcane-flicker   { @include arcane-flicker(); }
+.anim-inscription-glow { @include inscription-glow(); }
+.anim-arcane-charge    { @include arcane-charge(); }
+.anim-arcane-reveal    { @include arcane-reveal(); }

@@ -107,6 +107,7 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
 
 .lecternFrame__sigil {
   @include sigil-dot($sigil-md);
+  @include sigil-pulse(3.2s, 1.1s);
 }
 
 .lecternFrame__label {
@@ -149,8 +150,11 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
     0 0 12px rgba($accent-500, 0.65),
     0 0 28px rgba($candle-bright, 0.25);
 
-  animation: flameDance 3s ease-in-out infinite alternate;
-  will-change: transform, opacity;
+  // flameDance handles shape; arcaneFlicker adds irregular intensity
+  animation:
+    flameDance    3s   ease-in-out infinite alternate,
+    arcaneFlicker 4.8s ease-in-out 0.3s infinite;
+  will-change: transform, opacity, filter;
 }
 
 .lecternFrame__wick {
@@ -236,6 +240,9 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
 
 @media (prefers-reduced-motion: reduce) {
   .lecternFrame__flame {
+    animation: none;
+  }
+  .lecternFrame__sigil {
     animation: none;
   }
 }

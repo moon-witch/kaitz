@@ -1,0 +1,36 @@
+// ─── Kaitz Animation Library ──────────────────────────────────────────────────
+//
+// Usage in components (variables/mixins are auto-injected via additionalData):
+//
+//   Via utility class in template:
+//     <div class="anim-border-glare"> ... </div>
+//
+//   Via mixin in <style lang="scss">:
+//     .my-element { @include border-glare($speed: 6s); }
+//
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Files:
+//   _border.scss  — orbiting border glare, glow-breathe
+//   _breathe.scss — float bob, shadow breathe, page rustle, gem pulse
+//   _shimmer.scss — surface shimmer, arcane ripple, ink bleed
+//   _glow.scss    — sigil pulse, arcane flicker, inscription glow, charge burst
+//
+// ─────────────────────────────────────────────────────────────────────────────
+
+@forward 'border';
+@forward 'breathe';
+@forward 'shimmer';
+@forward 'glow';
+
+// ─── Global reduced-motion override ──────────────────────────────────────────
+// Disables all utility classes for users who prefer reduced motion.
+// Mixin-based animations in components should add their own
+// @media (prefers-reduced-motion: reduce) guards.
+
+@media (prefers-reduced-motion: reduce) {
+  [class*='anim-'] {
+    animation: none !important;
+    transition: none !important;
+  }
+}

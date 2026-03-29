@@ -1,5 +1,6 @@
 @use 'variables';
 @use '../fonts/fonts.scss';
+@use './animations/index';
 
 :root {
   color-scheme: dark;
@@ -8,6 +9,7 @@
 html, body {
   height: 100%;
   overscroll-behavior: none;
+  scroll-behavior: smooth;
 }
 
 body {

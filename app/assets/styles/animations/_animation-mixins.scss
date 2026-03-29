@@ -1,0 +1,201 @@
+@use '../variables' as *;
+
+// ─── Animation Mixins ─────────────────────────────────────────────────────────
+// Pure mixin definitions — no @keyframes, no CSS output.
+// This file is safe to inject via additionalData (no CSS duplication).
+// The @keyframes live in the individual animation files loaded by main.scss.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Border ────────────────────────────────────────────────────────────────────
+
+// Orbiting glare point. Consumes ::before by default ($pseudo: before|after).
+@mixin border-glare(
+  $color:  $accent-500,
+  $bright: $candle-bright,
+  $speed:  5s,
+  $width:  1px,
+  $pseudo: before
+) {
+  position: relative;
+  isolation: isolate;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * #{$width});
+    border-radius: inherit;
+    padding: $width;
+    pointer-events: none;
+    z-index: 1;
+
+    background: conic-gradient(
+      from var(--glare-angle),
+      transparent       0deg,
+      transparent     295deg,
+      rgba($color, 0.20) 320deg,
+      rgba($bright, 0.80) 350deg,
+      rgba($color, 0.20) 356deg,
+      transparent     360deg
+    );
+
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    animation: borderGlareRotate $speed linear infinite;
+  }
+}
+
+// Uniform glow that breathes — simpler, no @property
+@mixin border-glow-breathe($speed: 3.5s, $delay: 0s) {
+  animation: borderGlowBreathe $speed ease-in-out $delay infinite;
+}
+
+// ── Breathe ───────────────────────────────────────────────────────────────────
+
+@mixin float-bob($speed: 4.5s, $delay: 0s) {
+  animation: floatBob $speed ease-in-out $delay infinite;
+  will-change: transform;
+}
+
+@mixin float-drift($speed: 6.5s, $delay: 0s) {
+  animation: floatDrift $speed ease-in-out $delay infinite;
+  will-change: transform;
+}
+
+@mixin shadow-breathe($speed: 4.5s, $delay: 0s) {
+  animation: shadowBreathe $speed ease-in-out $delay infinite;
+}
+
+@mixin page-rustle($speed: 5.5s, $delay: 0s) {
+  animation: pageRustle $speed ease-in-out $delay infinite;
+  transform-origin: 18% 12%;
+}
+
+@mixin gem-breathe($speed: 2.8s, $delay: 0s) {
+  animation: gemBreathe $speed ease-in-out $delay infinite;
+  will-change: transform, filter;
+}
+
+@mixin mist-tide($speed: 7s, $delay: 0s) {
+  animation: mistTide $speed ease-in-out $delay infinite;
+}
+
+// ── Shimmer ───────────────────────────────────────────────────────────────────
+
+// Looping candlelight reflection. Requires overflow: hidden (applied by mixin).
+@mixin surface-shimmer(
+  $color:  $candle-bright,
+  $speed:  7s,
+  $delay:  0s,
+  $pseudo: after
+) {
+  overflow: hidden;
+  position: relative;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    background: linear-gradient(
+      108deg,
+      transparent              20%,
+      rgba($color, 0.00)       32%,
+      rgba($color, 0.05)       42%,
+      rgba($color, 0.11)       50%,
+      rgba($color, 0.05)       58%,
+      rgba($color, 0.00)       68%,
+      transparent              80%
+    );
+    background-size: 300% 100%;
+
+    animation: surfaceShimmer $speed ease-in-out $delay infinite alternate;
+  }
+}
+
+// One-shot shimmer sweep
+@mixin shimmer-sweep(
+  $color:  $candle-bright,
+  $speed:  0.85s,
+  $pseudo: after
+) {
+  overflow: hidden;
+  position: relative;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    background: linear-gradient(
+      108deg,
+      transparent          20%,
+      rgba($color, 0.00)   32%,
+      rgba($color, 0.14)   50%,
+      rgba($color, 0.00)   68%,
+      transparent          80%
+    );
+    background-size: 300% 100%;
+
+    animation: shimmerSweep $speed ease-out forwards;
+  }
+}
+
+// Expanding ring. Uses ::after.
+@mixin arcane-ripple($color: $accent-500, $speed: 2.2s, $delay: 0s) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba($color, 0.60);
+    pointer-events: none;
+    transform-origin: center;
+
+    animation: arcaneRipple $speed ease-out $delay infinite;
+  }
+}
+
+@mixin ink-bleed($speed: 5.5s, $delay: 0s) {
+  animation: inkBleed $speed ease-in-out $delay infinite;
+}
+
+@mixin crystal-catch($speed: 1.0s, $delay: 0s) {
+  animation: crystalCatch $speed ease-out $delay forwards;
+}
+
+// ── Glow ──────────────────────────────────────────────────────────────────────
+
+@mixin sigil-pulse($speed: 3.2s, $delay: 0s) {
+  animation: sigilPulse $speed ease-in-out $delay infinite;
+}
+
+@mixin arcane-flicker($speed: 5.5s, $delay: 0s) {
+  animation: arcaneFlicker $speed ease-in-out $delay infinite;
+}
+
+@mixin arcane-flicker-sharp($speed: 3.5s, $delay: 0s) {
+  animation: arcaneFlicker $speed linear $delay infinite;
+}
+
+@mixin inscription-glow($speed: 4s, $delay: 0s) {
+  animation: inscriptionGlow $speed ease-in-out $delay infinite;
+}
+
+@mixin arcane-charge($speed: 1.2s) {
+  animation: arcaneCharge $speed ease-out forwards;
+}
+
+@mixin arcane-reveal($speed: 0.8s, $delay: 0s) {
+  animation: arcaneReveal $speed ease-out $delay forwards;
+  opacity: 0;
+}

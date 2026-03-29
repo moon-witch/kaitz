@@ -1,0 +1,154 @@
+@use '../variables' as *;
+
+// ─── Surface Shimmer & Light Effects ─────────────────────────────────────────
+// Candlelight reflections sweeping across surfaces, ripples, ink bleed.
+// These create the sense that elements are in a lit physical space.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+
+// Diagonal highlight band drifts slowly across a surface (candlelight reflection)
+@keyframes surfaceShimmer {
+  0%   { background-position: -120% center; }
+  100% { background-position: 220% center; }
+}
+
+// Fast one-shot sweep — on hover entry, interactive feedback
+@keyframes shimmerSweep {
+  from { background-position: -120% center; opacity: 1; }
+  to   { background-position: 220% center;  opacity: 0; }
+}
+
+// Concentric ring expands outward from element and fades
+@keyframes arcaneRipple {
+  0%   { transform: scale(0.80); opacity: 0.65; }
+  65%  { transform: scale(1.45); opacity: 0.15; }
+  100% { transform: scale(1.65); opacity: 0.00; }
+}
+
+// Ink stain slowly deepens then recedes (for parchment vignettes)
+@keyframes inkBleed {
+  0%, 100% { opacity: 0.40; }
+  55%      { opacity: 0.72; }
+}
+
+// Mote (tiny glowing particle) drifts upward and vanishes
+// Apply to small ::before / ::after decorative dots
+@keyframes moteDrift {
+  0%   { transform: translateY(0px)   translateX(0px);  opacity: 0.00; }
+  12%  { opacity: 0.80; }
+  80%  { opacity: 0.40; }
+  100% { transform: translateY(-30px) translateX(5px);  opacity: 0.00; }
+}
+
+// Crystal catch: element briefly gleams (one-shot, on load or focus)
+@keyframes crystalCatch {
+  0%   { filter: brightness(1.00) saturate(1.00); }
+  30%  { filter: brightness(1.35) saturate(1.20); }
+  55%  { filter: brightness(1.55) saturate(1.30); }
+  75%  { filter: brightness(1.20) saturate(1.10); }
+  100% { filter: brightness(1.00) saturate(1.00); }
+}
+
+// ─── Mixins ───────────────────────────────────────────────────────────────────
+
+// Looping candlelight reflection across the element.
+// Requires overflow: hidden on the element (applied by mixin).
+// $pseudo — which pseudo to use (after recommended; before is often occupied).
+@mixin surface-shimmer(
+  $color:  $candle-bright,
+  $speed:  7s,
+  $delay:  0s,
+  $pseudo: after
+) {
+  overflow: hidden;
+  position: relative;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    background: linear-gradient(
+      108deg,
+      transparent                 20%,
+      rgba($color, 0.00)          32%,
+      rgba($color, 0.05)          42%,
+      rgba($color, 0.11)          50%,
+      rgba($color, 0.05)          58%,
+      rgba($color, 0.00)          68%,
+      transparent                 80%
+    );
+    background-size: 300% 100%;
+
+    animation: surfaceShimmer $speed ease-in-out $delay infinite alternate;
+  }
+}
+
+// One-shot shimmer sweep (trigger via class add/remove in JS, or on :hover)
+@mixin shimmer-sweep(
+  $color:  $candle-bright,
+  $speed:  0.85s,
+  $pseudo: after
+) {
+  overflow: hidden;
+  position: relative;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    background: linear-gradient(
+      108deg,
+      transparent         20%,
+      rgba($color, 0.00)  32%,
+      rgba($color, 0.14)  50%,
+      rgba($color, 0.00)  68%,
+      transparent         80%
+    );
+    background-size: 300% 100%;
+
+    animation: shimmerSweep $speed ease-out forwards;
+  }
+}
+
+// Expanding ring that pulses outward. Uses ::after.
+// Good for sigil dots, interactive icons, "activated" markers.
+@mixin arcane-ripple($color: $accent-500, $speed: 2.2s, $delay: 0s) {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba($color, 0.60);
+    pointer-events: none;
+    transform-origin: center;
+
+    animation: arcaneRipple $speed ease-out $delay infinite;
+  }
+}
+
+@mixin ink-bleed($speed: 5.5s, $delay: 0s) {
+  animation: inkBleed $speed ease-in-out $delay infinite;
+}
+
+@mixin crystal-catch($speed: 1.0s, $delay: 0s) {
+  animation: crystalCatch $speed ease-out $delay forwards;
+}
+
+// ─── Utility classes ──────────────────────────────────────────────────────────
+
+.anim-shimmer         { @include surface-shimmer(); }
+.anim-shimmer--fast   { @include surface-shimmer($speed: 3.5s); }
+.anim-shimmer-sweep   { @include shimmer-sweep(); }
+.anim-ripple          { @include arcane-ripple(); }
+.anim-ripple--slow    { @include arcane-ripple($speed: 3.5s); }
+.anim-ink-bleed       { @include ink-bleed(); }
+.anim-crystal-catch   { @include crystal-catch(); }

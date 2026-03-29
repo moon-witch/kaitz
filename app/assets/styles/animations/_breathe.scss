@@ -1,0 +1,108 @@
+@use '../variables' as *;
+
+// ─── Breathe / Organic Movement ───────────────────────────────────────────────
+// Subtle living motion: levitation, shadow pulse, paper rustle, gem throb.
+// These are meant to be always-on ambient animations on individual elements —
+// they make the scene feel alive without being distracting.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+
+// Smooth vertical levitation — pause at top to feel weightless
+@keyframes floatBob {
+  0%, 100% { transform: translateY(0px); }
+  42%      { transform: translateY(-6px); }
+  58%      { transform: translateY(-6px); }
+}
+
+// Gentle drift with slight rotation — less mechanical than a pure bob
+@keyframes floatDrift {
+  0%   { transform: translateY(0px)   rotate(0.0deg); }
+  28%  { transform: translateY(-5px)  rotate(0.4deg); }
+  55%  { transform: translateY(-3px)  rotate(-0.3deg); }
+  78%  { transform: translateY(-6px)  rotate(0.2deg); }
+  100% { transform: translateY(0px)   rotate(0.0deg); }
+}
+
+// Arcane shadow swells outward and recedes — card is "breathing"
+@keyframes shadowBreathe {
+  0%, 100% {
+    box-shadow:
+      0 14px 36px rgba(0, 0, 0, 0.50),
+      0  0  12px rgba($accent-500, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 22px 58px rgba(0, 0, 0, 0.62),
+      0  0  34px rgba($accent-500, 0.22),
+      0  0  70px rgba($candle-bright, 0.06);
+  }
+}
+
+// Tiny rotation for hand-written paper pinned to a board — feels precarious
+@keyframes pageRustle {
+  0%   { transform: rotate(-0.30deg); }
+  30%  { transform: rotate(0.22deg); }
+  62%  { transform: rotate(-0.18deg); }
+  100% { transform: rotate(-0.30deg); }
+}
+
+// Gem / sigil orb: scale + brightness swell — like a heartbeat
+@keyframes gemBreathe {
+  0%, 100% { transform: scale(1.00); filter: brightness(1.00) saturate(1.00); }
+  50%       { transform: scale(1.14); filter: brightness(1.40) saturate(1.15); }
+}
+
+// Slow opacity tide — for decorative background elements, mist layers
+@keyframes mistTide {
+  0%, 100% { opacity: 0.32; }
+  50%      { opacity: 0.62; }
+}
+
+// ─── Mixins ───────────────────────────────────────────────────────────────────
+
+@mixin float-bob($speed: 4.5s, $delay: 0s) {
+  animation: floatBob $speed ease-in-out $delay infinite;
+  will-change: transform;
+}
+
+@mixin float-drift($speed: 6.5s, $delay: 0s) {
+  animation: floatDrift $speed ease-in-out $delay infinite;
+  will-change: transform;
+}
+
+@mixin shadow-breathe($speed: 4.5s, $delay: 0s) {
+  animation: shadowBreathe $speed ease-in-out $delay infinite;
+}
+
+// transform-origin bottom keeps the paper feeling pinned to the board
+@mixin page-rustle($speed: 5.5s, $delay: 0s) {
+  animation: pageRustle $speed ease-in-out $delay infinite;
+  transform-origin: 18% 12%;
+}
+
+@mixin gem-breathe($speed: 2.8s, $delay: 0s) {
+  animation: gemBreathe $speed ease-in-out $delay infinite;
+  will-change: transform, filter;
+}
+
+@mixin mist-tide($speed: 7s, $delay: 0s) {
+  animation: mistTide $speed ease-in-out $delay infinite;
+}
+
+// ─── Utility classes ──────────────────────────────────────────────────────────
+
+.anim-float          { @include float-bob(); }
+.anim-float-drift    { @include float-drift(); }
+.anim-shadow-breathe { @include shadow-breathe(); }
+.anim-page-rustle    { @include page-rustle(); }
+.anim-gem-breathe    { @include gem-breathe(); }
+.anim-mist-tide      { @include mist-tide(); }
+
+// Staggered delay variants for groups of items
+.anim-float--d1 { @include float-bob($delay: 0.6s); }
+.anim-float--d2 { @include float-bob($delay: 1.2s); }
+.anim-float--d3 { @include float-bob($delay: 1.8s); }
+
+.anim-gem-breathe--d1 { @include gem-breathe($delay: 0.5s); }
+.anim-gem-breathe--d2 { @include gem-breathe($delay: 1.0s); }

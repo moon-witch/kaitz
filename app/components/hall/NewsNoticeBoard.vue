@@ -113,6 +113,7 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 
 .boardFrame__plaqueRune {
   @include sigil-dot($sigil-md);
+  @include sigil-pulse(3.8s, 1.8s);
 }
 
 .boardFrame__plaqueText {

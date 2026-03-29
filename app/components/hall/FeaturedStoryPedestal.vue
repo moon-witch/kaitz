@@ -66,6 +66,7 @@ const featuredStory = computed(() => {
 // Frame: dark walnut panel with carved-edge inset
 .plinthFrame {
   @include card-frame;
+  @include border-glow-breathe(5s, 0.8s);
 
   background:
     radial-gradient(circle at 14% 18%, rgba($accent-500, 0.12), transparent 58%),
@@ -110,6 +111,7 @@ const featuredStory = computed(() => {
 
 .plinthFrame__sigil {
   @include sigil-dot($sigil-md);
+  @include sigil-pulse(3.5s, 0s);
 }
 
 .plinthFrame__label {
@@ -178,6 +180,7 @@ const featuredStory = computed(() => {
   border-radius: 999px;
   background: radial-gradient(circle at 35% 30%, rgba($candle-bright, 0.90), rgba($accent-500, 0.70));
   box-shadow: 0 0 14px rgba($accent-500, 0.35);
+  @include gem-breathe(2.8s);
 }
 
 .empty {

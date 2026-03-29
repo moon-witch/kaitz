@@ -42,6 +42,33 @@
     0 2px 6px rgba(0, 0, 0, 0.30);
 
   overflow: hidden;
+
+  // Slow candlelight shimmer across the surface
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+
+    background: linear-gradient(
+      108deg,
+      transparent                       20%,
+      rgba(255, 235, 160, 0.00)         34%,
+      rgba(255, 235, 160, 0.06)         44%,
+      rgba(255, 235, 160, 0.12)         50%,
+      rgba(255, 235, 160, 0.06)         56%,
+      rgba(255, 235, 160, 0.00)         66%,
+      transparent                       80%
+    );
+    background-size: 300% 100%;
+    background-position: -120% center;
+    animation: surfaceShimmer 9s ease-in-out 0s infinite alternate;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::after { animation: none; }
+  }
 }
 
 // Paper fiber grain lines — subtle horizontal texture

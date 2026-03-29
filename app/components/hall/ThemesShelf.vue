@@ -141,6 +141,7 @@ defineProps<{
   box-shadow:
     0 0 16px rgba($accent-500, 0.50),
     0 0 4px rgba($candle-bright, 0.25);
+  @include sigil-pulse(3.0s, 0.4s);
 }
 
 .shelf__h2 {
@@ -279,6 +280,7 @@ defineProps<{
     0 8px 16px rgba(0,0,0,0.40),
     inset 0 1px 0 rgba(255,240,180,0.40);
   opacity: 0.95;
+  @include gem-breathe(3s, 0s);
 }
 
 .spine__body {
@@ -337,8 +339,15 @@ defineProps<{
     color-mix(in srgb, var(--tAccent) 28%, rgba(35, 18, 6, 0.88));
 }
 
+// Stagger gem breathe so spines feel independent
+.spine:nth-child(2) .spine__gem { animation-delay: 0.7s; }
+.spine:nth-child(3) .spine__gem { animation-delay: 1.4s; }
+.spine:nth-child(4) .spine__gem { animation-delay: 2.1s; }
+
 @media (prefers-reduced-motion: reduce) {
   .spine { transition: none; }
   .spine:hover { transform: none; }
+  .shelf__sigil,
+  .spine__gem { animation: none; }
 }
 </style>

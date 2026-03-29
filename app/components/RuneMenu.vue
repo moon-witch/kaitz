@@ -13,12 +13,13 @@ router.afterEach(() => emit("close"));
 
 const backdropEl = ref<HTMLDivElement | null>(null);
 const items = [
-  { label: "Zuhause", to: "/",       x: "-35px",  y: "40px"   },
-  { label: "News",    to: "/news",   x: "-85px",  y: "8px"  },
-  { label: "Autor",    to: "/about",  x: "-125px", y: "-31px"  },
-  { label: "Stories", to: "/stories",x: "-155px", y: "-75px"  },
-  { label: "Tagebuch",to: "/diary",  x: "-160px", y: "-122px" },
-] as const;
+  //                desktop               mobile
+  { label: "Zuhause",  to: "/",        x: "-95px",  y: "13px",   xm: "-70px", ym: "30px"  },
+  { label: "News",     to: "/news",    x: "-125px",  y: "-15px",    xm: "-85px", ym: "6px"   },
+  { label: "Autor",    to: "/about",   x: "-150px", y: "-47px",  xm: "-120px", ym: "-18px" },
+  { label: "Stories",  to: "/stories", x: "-155px", y: "-79px",  xm: "-140px",ym: "-44px" },
+  { label: "Tagebuch", to: "/diary",   x: "-160px", y: "-112px", xm: "-150px",ym: "-70px" },
+];
 
 
 const itemEls = ref<HTMLElement[]>([]);
@@ -103,7 +104,7 @@ watch(
           class="runeMenu__item"
           role="menuitem"
           @click="close"
-          :style="{ '--x': it.x, '--y': it.y }"
+          :style="{ '--x': it.x, '--y': it.y, '--xm': it.xm, '--ym': it.ym }"
           :ref="setItemRef"
           :data-label="it.label"
       >
@@ -127,15 +128,39 @@ watch(
   inset: 0;
   background: rgba(0, 0, 0, 0.38);
   opacity: 1;
+
+  @media (max-width: 1024px) {
+    background: rgba(0, 0, 0, 0.72);
+  }
 }
 
 .runeMenu__anchor {
   position: absolute;
-  left: calc(100vw - 10px - 45px);
-  top: calc(10px + 120px);
   width: 0;
   height: 0;
   pointer-events: none;
+
+  // --spread cascades to child .runeMenu__item elements
+  // and scales the arc without changing the JS item positions
+  --spread: 1;
+
+  // Desktop: compass is 100px at top:10 right:10
+  left: calc(100vw - 10px - 20px);
+  top: 130px;
+
+  // Tablet: compass is 200px
+  @media (min-width: 721px) and (max-width: 1024px) {
+    left: calc(100vw - 10px - 25px);
+    top: 130px;
+    --spread: 0.85;
+  }
+
+  // Mobile: compass is 70px at top:20 right:6
+  @media (max-width: 720px) {
+    left: calc(100vw - 6px - 12px);
+    top: 90px;
+    --spread: 0.48;
+  }
 }
 
 /* Item — ghostly floating label */
@@ -159,7 +184,12 @@ watch(
   background: none;
 
   --s: 1;
-  transform: translate(var(--x), var(--y)) scale(var(--s));
+  --spread: 1; /* fallback; actual value cascades from .runeMenu__anchor */
+  transform: translate(calc(var(--x) * var(--spread)), calc(var(--y) * var(--spread))) scale(var(--s));
+
+  @media (max-width: 720px) {
+    transform: translate(calc(var(--xm) * var(--spread)), calc(var(--ym) * var(--spread))) scale(var(--s));
+  }
   opacity: 0;
 
   /* Contrast: dark drop shadow beneath, soft purple glow */
@@ -211,7 +241,11 @@ watch(
   }
 
   &:active {
-    transform: translate(var(--x), var(--y)) scale(var(--s));
+    transform: translate(calc(var(--x) * var(--spread)), calc(var(--y) * var(--spread))) scale(var(--s));
+
+    @media (max-width: 720px) {
+      transform: translate(calc(var(--xm) * var(--spread)), calc(var(--ym) * var(--spread))) scale(var(--s));
+    }
   }
 
   &:focus-visible {

@@ -1,0 +1,153 @@
+@use '../variables' as *;
+
+// ─── Border Glare ─────────────────────────────────────────────────────────────
+// A bright point of arcane light that orbits an element's border,
+// plus a simpler uniform glow-pulse variant.
+//
+// borderGlareRotate uses @property (Chrome 85+, Edge 85+, Safari 15.4+, FF 128+)
+// for smooth conic-gradient rotation. Falls back to no animation in older browsers.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@property --glare-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+// ─── Keyframes ────────────────────────────────────────────────────────────────
+
+@keyframes borderGlareRotate {
+  to { --glare-angle: 360deg; }
+}
+
+// One-shot: orbits once and fades out (for interaction feedback)
+@keyframes borderGlareFlare {
+  0%   { --glare-angle: 0deg;   opacity: 0.00; }
+  8%   { opacity: 1.00; }
+  85%  { --glare-angle: 360deg; opacity: 1.00; }
+  100% { --glare-angle: 360deg; opacity: 0.00; }
+}
+
+// Uniform glow that breathes in and out — no @property needed
+@keyframes borderGlowBreathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba($accent-500, 0.18),
+      0 0 10px rgba($accent-500, 0.08);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba($accent-500, 0.60),
+      0 0 20px rgba($accent-500, 0.28),
+      0 0 40px rgba($candle-bright, 0.10);
+  }
+}
+
+// ─── Mixins ───────────────────────────────────────────────────────────────────
+
+// Orbiting arcane glare. Element must have position: relative/absolute.
+// $pseudo — which pseudo-element to use (before|after). Defaults to before.
+//           Use after if the element's ::before is already occupied.
+@mixin border-glare(
+  $color:  $accent-500,
+  $bright: $candle-bright,
+  $speed:  5s,
+  $width:  1px,
+  $pseudo: before
+) {
+  position: relative;
+  isolation: isolate;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * #{$width});
+    border-radius: inherit;
+    padding: $width;
+    pointer-events: none;
+    z-index: 1;
+
+    // Tight bright spot (~60deg arc) in a conic gradient
+    background: conic-gradient(
+      from var(--glare-angle),
+      transparent       0deg,
+      transparent     295deg,
+      rgba($color, 0.20) 320deg,
+      rgba($bright, 0.80) 350deg,
+      rgba($color, 0.20) 356deg,
+      transparent     360deg
+    );
+
+    // Mask: only the padding strip (the "border" area) is visible
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    animation: borderGlareRotate $speed linear infinite;
+  }
+}
+
+// Uniform border glow pulse — simpler, no @property, works everywhere
+@mixin border-glow-breathe($speed: 3.5s, $delay: 0s) {
+  animation: borderGlowBreathe $speed ease-in-out $delay infinite;
+}
+
+// One-shot orbital flare (e.g. on click/focus). Apply class via JS for re-trigger.
+@mixin border-glare-flare(
+  $color:  $accent-500,
+  $bright: $candle-bright,
+  $speed:  1.4s,
+  $width:  1px,
+  $pseudo: before
+) {
+  position: relative;
+  isolation: isolate;
+
+  &::#{$pseudo} {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * #{$width});
+    border-radius: inherit;
+    padding: $width;
+    pointer-events: none;
+    z-index: 1;
+
+    background: conic-gradient(
+      from var(--glare-angle),
+      transparent       0deg,
+      transparent     295deg,
+      rgba($color, 0.22) 320deg,
+      rgba($bright, 0.85) 350deg,
+      rgba($color, 0.22) 356deg,
+      transparent     360deg
+    );
+
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    animation: borderGlareFlare $speed ease-in forwards;
+    opacity: 0;
+  }
+}
+
+// ─── Utility classes ──────────────────────────────────────────────────────────
+
+// Steady orbit — default speed (5s)
+.anim-border-glare         { @include border-glare(); }
+
+// Slower orbit — feels more ceremonial, less urgent
+.anim-border-glare--slow   { @include border-glare($speed: 9s); }
+
+// Faster orbit — excited or dangerous magic
+.anim-border-glare--fast   { @include border-glare($speed: 2.5s); }
+
+// Gentle glow that breathes instead of orbiting
+.anim-border-breathe       { @include border-glow-breathe(); }
+
+// Same but slower — ambient idle glow
+.anim-border-breathe--slow { @include border-glow-breathe($speed: 6s); }
