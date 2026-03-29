@@ -8,6 +8,10 @@ export default defineNuxtConfig({
             meta: [
                 { name: "viewport", content: "width=device-width, initial-scale=1" },
             ],
+            title: "Library of Kaitz",
+            link: [
+                { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+            ],
         },
     },
     compatibilityDate: '2025-07-15',
