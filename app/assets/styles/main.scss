@@ -15,6 +15,7 @@ body {
   background: $ink-950;
   color: $moon-100;
   font-family: $font-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -43,7 +44,7 @@ a:hover {
   blockquote {
     margin: 1em 0;
     padding-left: 1rem;
-    border-left: 2px solid rgba(214,214,230,0.35);
+    border-left: 2px solid rgba($accent-500, 0.40);
     opacity: $op-body;
   }
 }

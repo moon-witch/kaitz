@@ -13,9 +13,16 @@ let glowAnim: any | null = null;
 
 let triOuterAnim: any | null = null;
 let triInnerAnim: any | null = null;
+let labelAnim: any | null = null;
 
 let triangleOuterEl: SVGGElement | null = null;
 let triangleInnerEl: SVGGElement | null = null;
+let textPathEl: SVGTextPathElement | null = null;
+
+// Arc starts at BOTTOM of circle, goes clockwise: bottom→left→top→right→bottom
+// 50% = top (closed, centered with no clip risk), 62.5% = upper-right (open)
+const LABEL_OFFSET_CLOSED = 50.5;
+const LABEL_OFFSET_OPEN   = 62.5;
 
 let triOuterBaseTransform = "";
 let triInnerBaseTransform = "";
@@ -117,11 +124,27 @@ function animateTrianglesClose() {
   });
 }
 
+function animateLabelTo(target: number, duration = 600) {
+  if (prefersReducedMotion.value || !textPathEl) return;
+  cancelAnim(labelAnim);
+  const current = parseFloat(textPathEl.getAttribute("startOffset") ?? "0");
+  const state = { v: current };
+  labelAnim = animate(state, {
+    v: target,
+    duration,
+    ease: "inOutCubic",
+    onUpdate: () => {
+      textPathEl!.setAttribute("startOffset", `${state.v}%`);
+    },
+  });
+}
+
 watch(
     () => props.open,
     (v) => {
       if (!ready.value) return;
       v ? animateTrianglesOpen() : animateTrianglesClose();
+      animateLabelTo(v ? LABEL_OFFSET_OPEN : LABEL_OFFSET_CLOSED);
     },
     { flush: "post" }
 );
@@ -180,6 +203,13 @@ onMounted(async () => {
     }
   }
 
+  // Resolve label textPath element for offset animation
+  const labelSvgEl = document.querySelector<SVGTextPathElement>(".arcane-compass__label textPath");
+  textPathEl = labelSvgEl ?? null;
+  if (textPathEl) {
+    textPathEl.setAttribute("startOffset", `${props.open ? LABEL_OFFSET_OPEN : LABEL_OFFSET_CLOSED}%`);
+  }
+
   ready.value = true;
 
   // Apply initial state once
@@ -192,21 +222,22 @@ onBeforeUnmount(() => {
   cancelAnim(glowAnim);
   cancelAnim(triOuterAnim);
   cancelAnim(triInnerAnim);
+  cancelAnim(labelAnim);
 });
 </script>
 
 <template>
   <div class="arcane-compass" aria-hidden="true" @click="handleClick">
     <CompassSvg ref="svgComp" class="arcane-compass__svg" />
-    <svg class="arcane-compass__label" viewBox="0 0 100 100" aria-hidden="true">
+    <svg class="arcane-compass__label" viewBox="0 0 100 100" overflow="visible" aria-hidden="true">
       <defs>
         <path
           id="kaitz-menu-arc"
-          d="M 50 3 A 47 47 0 0 1 97 50 A 47 47 0 0 1 50 97 A 47 47 0 0 1 3 50 A 47 47 0 0 1 50 3"
+          d="M 50 97 A 47 47 0 0 1 3 50 A 47 47 0 0 1 50 3 A 47 47 0 0 1 97 50 A 47 47 0 0 1 50 97"
         />
       </defs>
       <text>
-        <textPath href="#kaitz-menu-arc" startOffset="12.5%" text-anchor="middle">MENÜ</textPath>
+        <textPath href="#kaitz-menu-arc" startOffset="50%" text-anchor="middle">MENÜ</textPath>
       </text>
     </svg>
   </div>
@@ -225,20 +256,8 @@ onBeforeUnmount(() => {
   z-index: 10;
   cursor: pointer;
   border-radius: 100%;
-  background: $ink-900;
+  background: none;
   padding: .3rem .3rem 0 .3rem;
-  box-shadow:
-      /* outer bloom */
-      0 0 22px rgba($accent-500, 0.22),
-      0 0 48px rgba($accent-500, 0.12),
-
-        /* elevation */
-      0 14px 34px rgba(0, 0, 0, 0.42),
-
-        /* subtle inner bevel */
-      inset 0 1px 0 rgba(255, 255, 255, 0.10),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.45),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .arcane-compass__svg {
@@ -251,15 +270,17 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   width: 100%;
+  overflow: visible;
   height: 100%;
   pointer-events: none;
 
   text {
     font-family: $font-serif;
-    font-size: 10px;
+    font-size: 11px;
+    font-weight: 700;
     letter-spacing: 2.5px;
     fill: $moon-100;
-    opacity: 0.5;
+    opacity: 0.55;
   }
 }
 </style>

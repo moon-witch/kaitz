@@ -1,13 +1,30 @@
-// ─── Color tokens ────────────────────────────────────────────────────────────
-$ink-950: #090511;
-$ink-900: #12081f;
-$ink-800: #1a0c2c;
+// ─── Color tokens — arcane library palette ───────────────────────────────────
 
-$parchment-50:  #f5efe3;
-$parchment-100: #e8dcc4;
+// Deep purple-ink backgrounds
+$ink-950: #090511;   // deepest void
+$ink-900: #12081f;   // dark arcane panel
+$ink-800: #1a0c2c;   // mid purple-dark
 
-$moon-100:    #d6d6e6;
-$accent-500:  #b042c9;
+// Parchment surfaces — keep warm as contrast to the cool arcane surroundings
+$parchment-50:  #f5ede0;  // fresh parchment
+$parchment-100: #e4d0a8;  // standard aged parchment
+
+// Text on dark backgrounds — cool silver
+$moon-100: #d6d6e6;
+
+// Text on parchment (dark purple ink)
+$ink-text: #1c0832;
+
+// Primary accent — arcane magenta/purple
+$accent-500: #b042c9;
+
+// Secondary arcane — dimmer purple for ambient magic
+$arcane-500: #8b35aa;
+
+// Arcane glow range (replaces candle flame — magical light, not fire)
+$candle-bright: #c890ff;  // bright arcane lavender
+$candle-mid:    $accent-500;
+$candle-ember:  #4a1a6a;
 
 // ─── Typography ──────────────────────────────────────────────────────────────
 $font-serif: 'Cormorant Garamond', serif;
@@ -21,24 +38,24 @@ $sp-base: 0.95rem;
 $sp-lg:   1.25rem;
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
-$max-width: 72rem; // ~1152px
+$max-width: 72rem;
 
-// ─── Border radii ────────────────────────────────────────────────────────────
-$radius-sm:    14px;
-$radius-md:    18px;
-$radius-frame: 20px;
+// ─── Border radii — irregular, hand-hewn feel ────────────────────────────────
+$radius-sm:    4px;
+$radius-md:    6px;
+$radius-frame: 8px;
 
 // ─── Shadows ─────────────────────────────────────────────────────────────────
-$shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.35);
-$shadow-card: 0 18px 46px rgba(0, 0, 0, 0.52);
-$shadow-lift: 0 22px 52px rgba(0, 0, 0, 0.58);
+$shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.50);
+$shadow-card: 0 18px 46px rgba(0, 0, 0, 0.60);
+$shadow-lift: 0 22px 52px rgba(0, 0, 0, 0.65);
 
 // ─── Opacity hierarchy ───────────────────────────────────────────────────────
-$op-dim:   0.70; // decorative rules, footer ornaments
-$op-muted: 0.78; // secondary text, descriptions
-$op-sub:   0.84; // synopses, subtitles
-$op-body:  0.92; // body / prose
-$op-ui:    0.95; // UI labels, plaque text
+$op-dim:   0.70;
+$op-muted: 0.78;
+$op-sub:   0.84;
+$op-body:  0.92;
+$op-ui:    0.95;
 
 // ─── Sigil / gem sizes ───────────────────────────────────────────────────────
 $sigil-sm: 8px;

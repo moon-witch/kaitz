@@ -48,7 +48,16 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
   inset: 0;
   z-index: -1;
   overflow: hidden;
-  transform: translateZ(0); /* force GPU layer — prevents iOS fixed-position shift on overscroll */
+  transform: translateZ(0);
+
+  // Full-page dark overlay so the image doesn't bleed through the UI
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(9, 5, 17, 0.72);
+    pointer-events: none;
+  }
 
   img {
     width: 100%;
@@ -56,15 +65,14 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
     object-fit: cover;
     object-position: center top;
 
-    /* slightly stronger on mobile so it reads as "place" */
-    opacity: 0.28;
+    opacity: 0.55;
 
     @media (min-width: 600px) {
-      opacity: 0.24;
+      opacity: 0.50;
     }
 
     @media (min-width: 900px) {
-      opacity: 0.20;
+      opacity: 0.44;
     }
   }
 }

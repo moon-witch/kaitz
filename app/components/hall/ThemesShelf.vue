@@ -23,6 +23,9 @@ defineProps<{
       <NuxtLink to="/stories" class="shelf__more">Durchstöbern</NuxtLink>
     </div>
 
+    <!-- Carved shelf plank -->
+    <div class="shelf__plank" aria-hidden="true"></div>
+
     <div class="shelf__row">
       <NuxtLink
           v-for="(t, i) in (themes ?? [])"
@@ -41,58 +44,60 @@ defineProps<{
           <div v-if="t.description" class="spine__desc">{{ t.description }}</div>
         </div>
 
-        <div class="spine__runes" aria-hidden="true"></div>
+        <div class="spine__base" aria-hidden="true"></div>
       </NuxtLink>
     </div>
   </section>
 </template>
 
 <style scoped lang="scss">
-/* Shelf: reads like a recessed bookshelf rather than a dashboard panel */
+// Shelf: heavy wooden bookshelf with carved paneling
 .shelf {
   margin-top: 1.35rem;
-  padding: 1rem;
-  border-radius: 18px;
+  padding: 1rem 1rem 0.65rem;
+  border-radius: $radius-md;
   position: relative;
   overflow: hidden;
 
+  // Deep walnut wood
   background:
-      radial-gradient(circle at 16% 18%, rgba($accent-500, 0.10), transparent 60%),
-      linear-gradient(180deg, rgba(110, 66, 32, 0.14), rgba(12, 10, 16, 0.42)),
-      rgba(10, 6, 18, 0.34);
+    radial-gradient(circle at 16% 18%, rgba($accent-500, 0.10), transparent 60%),
+    linear-gradient(180deg, rgba(110, 66, 32, 0.14), rgba(12, 10, 16, 0.42)),
+    rgba(10, 6, 18, 0.34);
 
-  border: 1px solid rgba(255, 255, 255, 0.09);
-
+  // Carved wood frame inset shadow
+  border: 1px solid rgba(200, 140, 50, 0.14);
   box-shadow:
-      0 18px 46px rgba(0,0,0,0.52),
-      inset 0 1px 0 rgba(255,255,255,0.08),
-      inset 0 -1px 0 rgba(0,0,0,0.52);
+    0 20px 52px rgba(0,0,0,0.62),
+    inset 0 2px 0 rgba(255, 220, 130, 0.12),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.55),
+    inset 2px 0 0 rgba(255, 220, 130, 0.06),
+    inset -2px 0 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Ambient varnish/grain */
+// Top wood grain sheen
 .shelf::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.38;
+  opacity: 0.40;
 
   background:
-      linear-gradient(90deg, rgba(255,255,255,0.05), transparent 35%, rgba(255,255,255,0.03)),
-      radial-gradient(circle at 80% 18%, rgba($moon-100,0.06), transparent 60%),
-      radial-gradient(circle at 12% 72%, rgba(0,0,0,0.18), transparent 55%);
+    radial-gradient(ellipse at 82% 16%, rgba($moon-100, 0.07), transparent 55%),
+    radial-gradient(ellipse at 12% 70%, rgba(0,0,0,0.20), transparent 48%);
 
   mix-blend-mode: screen;
 }
 
-/* Soft vignette */
+// Soft vignette
 .shelf::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 28%, rgba(0,0,0,0), rgba(0,0,0,0.42) 72%);
-  opacity: 0.55;
+  background: radial-gradient(ellipse at 50% 30%, rgba(0,0,0,0), rgba(0,0,0,0.40) 78%);
+  opacity: 0.60;
 }
 
 .shelf__cap {
@@ -110,20 +115,21 @@ defineProps<{
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
+  padding: 0.32rem 0.6rem;
+  border-radius: 3px 2px 4px 2px / 2px 3px 2px 3px;
 
   background:
-      radial-gradient(circle at 22% 30%, rgba($accent-500,0.18), transparent 55%),
-      rgba(255,255,255,0.03);
+    radial-gradient(circle at 22% 30%, rgba($accent-500, 0.18), transparent 55%),
+    rgba(255, 255, 255, 0.03);
 
   box-shadow:
-      0 10px 24px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.08);
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.30);
 
+  border: 1px solid rgba(255, 255, 255, 0.07);
   font-family: $font-serif;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   opacity: 0.95;
 }
 
@@ -132,25 +138,45 @@ defineProps<{
   height: 9px;
   border-radius: 999px;
   background: rgba($accent-500, 0.85);
-  box-shadow: 0 0 16px rgba($accent-500, 0.45);
+  box-shadow:
+    0 0 16px rgba($accent-500, 0.50),
+    0 0 4px rgba($candle-bright, 0.25);
 }
 
 .shelf__h2 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   letter-spacing: 0.04em;
+  color: rgba($moon-100, $op-ui);
 }
 
 .shelf__more {
   position: relative;
   z-index: 1;
-
+  font-family: $font-serif;
+  font-style: italic;
   font-size: 0.9rem;
-  opacity: 0.82;
+  opacity: 0.88;
   text-decoration: none;
-  color: rgba($moon-100, 0.92);
+  color: rgba($accent-500, 0.90);
+  letter-spacing: 0.02em;
 
-  &:hover { opacity: 1; }
+  &:hover { opacity: 1; color: $candle-bright; }
+}
+
+// Shelf plank
+.shelf__plank {
+  position: relative;
+  z-index: 3;
+  height: 8px;
+  margin: 0 -1rem;
+  order: 99;
+
+  background: linear-gradient(180deg, rgba(60, 35, 12, 0.92), rgba(30, 18, 6, 0.96));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .shelf__row {
@@ -159,75 +185,77 @@ defineProps<{
 
   display: grid;
   gap: 0.9rem;
+  padding-bottom: 0.9rem;
 
   @media (min-width: 900px) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-/* Book-spine cards: feel like physical spines, not tiles */
+// Book spine cards: leather/cloth binding feel
 .spine {
-  --tAccent: #b042c9;
+  --tAccent: #c8821a;  // default to amber if no theme color
 
   position: relative;
   overflow: hidden;
 
-  border-radius: 16px;
-  padding: 0.9rem 0.9rem 1rem;
+  border-radius: 4px 4px 2px 2px;
+  padding: 0.9rem 0.9rem 0.85rem;
 
   text-decoration: none;
   color: rgba($moon-100, 0.96);
 
+  // Leather/cloth cover with worn gloss
   background:
-      /* highlight band like worn lacquer */
-      linear-gradient(90deg,
-          rgba(255,255,255,0.00) 0%,
-          rgba(255,255,255,0.08) 18%,
-          rgba(255,255,255,0.02) 55%,
-          rgba(255,255,255,0.00) 100%
-      ),
-        /* accent bloom */
-      radial-gradient(circle at 22% 28%, color-mix(in srgb, var(--tAccent) 32%, transparent), transparent 62%),
-        /* leather/cloth base */
-      linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
-      rgba(255, 255, 255, 0.03);
+    // Highlight strip — worn leather gloss
+    linear-gradient(90deg,
+      rgba(255,255,255,0.00) 0%,
+      rgba(255,255,255,0.07) 22%,
+      rgba(255,255,255,0.02) 60%,
+      rgba(255,255,255,0.00) 100%
+    ),
+    // Accent color bloom (theme color)
+    radial-gradient(ellipse at 22% 28%, color-mix(in srgb, var(--tAccent) 38%, rgba(80,40,10,0.4)), transparent 62%),
+    // Leather/cloth base with theme color
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.15)),
+    color-mix(in srgb, var(--tAccent) 22%, rgba(35, 18, 6, 0.88));
 
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(200, 140, 50, 0.12);
+  border-bottom: none;
 
   box-shadow:
-      0 18px 40px rgba(0,0,0,0.50),
-      inset 0 1px 0 rgba(255,255,255,0.10),
-      inset 0 -1px 0 rgba(0,0,0,0.35);
+    0 16px 38px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,220,130,0.10),
+    inset 0 -1px 0 rgba(0,0,0,0.40);
 
   transform-origin: 22% 22%;
   transition:
-      transform 240ms ease,
-      box-shadow 280ms ease,
-      background 280ms ease;
+    transform 240ms ease,
+    box-shadow 280ms ease;
 }
 
+// Embossing on cover
 .spine::before {
-  /* subtle “embossing” + grain */
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.55;
+  opacity: 0.50;
 
   background:
-      radial-gradient(circle at 20% 22%, rgba(255,255,255,0.10), transparent 45%),
-      radial-gradient(circle at 78% 72%, rgba(0,0,0,0.14), transparent 52%);
+    radial-gradient(ellipse at 20% 22%, rgba(255,255,255,0.10), transparent 42%),
+    radial-gradient(ellipse at 78% 72%, rgba(0,0,0,0.18), transparent 48%);
 
   mix-blend-mode: overlay;
 }
 
+// Inner vignette
 .spine::after {
-  /* inner vignette */
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 30%, rgba(0,0,0,0), rgba(0,0,0,0.38) 74%);
+  background: radial-gradient(ellipse at 50% 30%, rgba(0,0,0,0), rgba(0,0,0,0.40) 76%);
   opacity: 0.55;
 }
 
@@ -240,14 +268,16 @@ defineProps<{
   margin-bottom: 0.45rem;
 }
 
+// Brass/amber gem on spine
 .spine__gem {
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--tAccent) 72%, #fff 10%);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--tAccent) 55%, rgba($candle-bright, 0.8)), color-mix(in srgb, var(--tAccent) 90%, #111));
   box-shadow:
-      0 0 18px color-mix(in srgb, var(--tAccent) 38%, transparent),
-      0 10px 18px rgba(0,0,0,0.35);
+    0 0 14px color-mix(in srgb, var(--tAccent) 45%, transparent),
+    0 8px 16px rgba(0,0,0,0.40),
+    inset 0 1px 0 rgba(255,240,180,0.40);
   opacity: 0.95;
 }
 
@@ -260,60 +290,51 @@ defineProps<{
 
 .spine__name {
   font-family: $font-serif;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  font-size: 0.98rem;
 }
 
 .spine__desc {
-  opacity: 0.78;
-  font-size: 0.9rem;
+  opacity: 0.72;
+  font-size: 0.88rem;
   line-height: 1.35;
 }
 
-/* A tiny runic band near the bottom edge */
-.spine__runes {
+// Spine base edge — pressed against shelf
+.spine__base {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0.55rem;
-  height: 18px;
-  pointer-events: none;
-  opacity: 0.55;
-  z-index: 1;
-
-  background:
-      linear-gradient(90deg,
-          transparent 0%,
-          color-mix(in srgb, var(--tAccent) 26%, transparent) 15%,
-          rgba(255,255,255,0.06) 35%,
-          color-mix(in srgb, var(--tAccent) 18%, transparent) 55%,
-          transparent 100%
-      );
-  filter: blur(0.1px);
+  bottom: 0;
+  height: 4px;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--tAccent) 20%, rgba(0,0,0,0.5)),
+    rgba(0,0,0,0.60)
+  );
 }
 
-/* Slightly different “resting” angles for physical realism */
-.spine--tilt0 { transform: rotate(-0.25deg); }
-.spine--tilt1 { transform: rotate(0.18deg); }
-.spine--tilt2 { transform: rotate(-0.12deg); }
+.spine--tilt0 { transform: rotate(-0.30deg); }
+.spine--tilt1 { transform: rotate(0.22deg); }
+.spine--tilt2 { transform: rotate(-0.15deg); }
 
 .spine:hover {
-  transform: translateY(-2px) rotate(-0.35deg);
+  transform: translateY(-4px) rotate(-0.40deg);
   box-shadow:
-      0 22px 52px rgba(0,0,0,0.58),
-      0 0 34px color-mix(in srgb, var(--tAccent) 18%, transparent),
-      inset 0 1px 0 rgba(255,255,255,0.12),
-      inset 0 -1px 0 rgba(0,0,0,0.40);
+    0 24px 56px rgba(0,0,0,0.62),
+    0 0 28px color-mix(in srgb, var(--tAccent) 22%, transparent),
+    inset 0 1px 0 rgba(255,220,130,0.14),
+    inset 0 -1px 0 rgba(0,0,0,0.45);
 
   background:
-      linear-gradient(90deg,
-          rgba(255,255,255,0.00) 0%,
-          rgba(255,255,255,0.10) 18%,
-          rgba(255,255,255,0.03) 55%,
-          rgba(255,255,255,0.00) 100%
-      ),
-      radial-gradient(circle at 22% 28%, color-mix(in srgb, var(--tAccent) 42%, transparent), transparent 64%),
-      linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)),
-      rgba(255, 255, 255, 0.035);
+    linear-gradient(90deg,
+      rgba(255,255,255,0.00) 0%,
+      rgba(255,255,255,0.10) 22%,
+      rgba(255,255,255,0.03) 60%,
+      rgba(255,255,255,0.00) 100%
+    ),
+    radial-gradient(ellipse at 22% 28%, color-mix(in srgb, var(--tAccent) 50%, rgba(80,40,10,0.4)), transparent 65%),
+    linear-gradient(180deg, rgba(255,255,255,0.07), rgba(0,0,0,0.12)),
+    color-mix(in srgb, var(--tAccent) 28%, rgba(35, 18, 6, 0.88));
 }
 
 @media (prefers-reduced-motion: reduce) {

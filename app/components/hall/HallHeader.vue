@@ -7,11 +7,21 @@ defineProps<{
 
 <template>
   <header class="hallHeader">
+    <div class="hallHeader__ornament" aria-hidden="true">
+      <div class="hallHeader__line"></div>
+      <div class="hallHeader__gem"></div>
+      <div class="hallHeader__line"></div>
+    </div>
     <div class="hallHeader__title">
       <h1 class="hallHeader__h1">{{ title ?? "Zentrale Halle" }}</h1>
       <p class="hallHeader__sub">
         {{ subtitle ?? "Neuigkeiten, Notizen und Geschichten – gesammelt im Archiv." }}
       </p>
+    </div>
+    <div class="hallHeader__ornament" aria-hidden="true">
+      <div class="hallHeader__line"></div>
+      <div class="hallHeader__gem"></div>
+      <div class="hallHeader__line"></div>
     </div>
   </header>
 </template>
@@ -19,40 +29,59 @@ defineProps<{
 <style scoped lang="scss">
 .hallHeader {
   display: flex;
-  gap: 1.5rem;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.hallHeader__ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 28rem;
+  opacity: $op-dim;
+}
+
+.hallHeader__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba($accent-500, 0.45), transparent);
+}
+
+.hallHeader__gem {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, rgba($candle-bright, 0.90), rgba($accent-500, 0.80));
+  box-shadow:
+    0 0 12px rgba($accent-500, 0.50),
+    0 0 4px rgba($candle-bright, 0.30);
 }
 
 .hallHeader__h1 {
   font-family: $font-serif;
-  font-size: 1.6rem;
-  letter-spacing: 0.03em;
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
   margin: 0;
-  justify-self: flex-start;
+  color: $moon-100;
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.55),
+    0 0 45px rgba($accent-500, 0.16);
 }
 
 .hallHeader__sub {
-  margin: 0.35rem 0 0;
-  opacity: $op-muted;
-  justify-self: flex-start;
-  max-width: 30ch;
-}
-
-.hallHeader__hint {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  font-family: $font-sans;
-  font-size: 0.9rem;
-  opacity: 0.75;
-  user-select: none;
-}
-
-.hallHeader__sigil {
-  @include sigil-dot(10px);
-  background: rgba($accent-500, 0.7);
-  box-shadow: 0 0 18px rgba($accent-500, 0.35);
+  margin: 0.3rem 0 0;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  max-width: 38ch;
+  line-height: 1.5;
+  color: $moon-100;
+  opacity: 0.88;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.70);
 }
 </style>

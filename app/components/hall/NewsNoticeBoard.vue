@@ -58,20 +58,20 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 </template>
 
 <style scoped lang="scss">
-/* Frame: wood + lacquer + faint runic varnish */
+// Frame: heavy wooden cork-board frame
 .boardFrame {
   @include card-frame;
   margin-top: 1rem;
   height: 30rem;
 
   background:
-      radial-gradient(circle at 18% 22%, rgba(255,255,255,0.05), transparent 60%),
-      radial-gradient(circle at 90% 10%, rgba($accent-500,0.10), transparent 55%),
-      linear-gradient(180deg, rgba(110, 66, 32, 0.22), rgba(30, 18, 12, 0.30)),
-      rgba(10, 6, 18, 0.38);
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.05), transparent 60%),
+    radial-gradient(circle at 90% 10%, rgba($accent-500, 0.10), transparent 55%),
+    linear-gradient(180deg, rgba(110, 66, 32, 0.22), rgba(30, 18, 12, 0.30)),
+    rgba(10, 6, 18, 0.38);
 }
 
-/* Varnish + subtle grain */
+// Varnish + subtle grain
 .boardFrame::before {
   content: "";
   position: absolute;
@@ -80,31 +80,31 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
   opacity: 0.40;
 
   background:
-      linear-gradient(90deg,
-          rgba(255,255,255,0.05) 0%,
-          transparent 32%,
-          rgba(255,255,255,0.03) 64%,
-          transparent 100%
-      ),
-      radial-gradient(circle at 12% 18%, rgba($accent-500,0.13), transparent 58%),
-      radial-gradient(circle at 72% 62%, rgba(255,255,255,0.05), transparent 60%);
+    linear-gradient(90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      transparent 32%,
+      rgba(255, 255, 255, 0.03) 64%,
+      transparent 100%
+    ),
+    radial-gradient(circle at 12% 18%, rgba($accent-500, 0.13), transparent 58%),
+    radial-gradient(circle at 72% 62%, rgba(255, 255, 255, 0.05), transparent 60%);
 
   mix-blend-mode: screen;
 }
 
-/* Edge vignette for depth */
+// Inner shadow — cork board depth
 .boardFrame::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-      radial-gradient(circle at 50% 30%, rgba(0,0,0,0), rgba(0,0,0,0.35) 70%);
-  opacity: 0.55;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.40);
 }
 
 .boardFrame__head {
   @include card-head;
+  background: linear-gradient(180deg, rgba(0,0,0,0.30), rgba(0,0,0,0.08));
+  border-bottom-color: rgba(180, 120, 40, 0.22);
 }
 
 .boardFrame__plaque {
@@ -116,7 +116,9 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 }
 
 .boardFrame__plaqueText {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
+  color: rgba($moon-100, $op-ui);
+  letter-spacing: 0.04em;
 }
 
 .boardFrame__more {
@@ -140,65 +142,78 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
   gap: 0.6rem;
 }
 
-/* Notes: parchment slips pinned to wood */
+// Notes: actual parchment paper slips pinned to the cork board
 .note {
   position: relative;
   display: block;
   text-decoration: none;
-  color: rgba($moon-100, 0.96);
 
-  border-radius: $radius-sm;
-  padding: 0.75rem 0.8rem 0.75rem 2.1rem;
+  // Hand-torn paper edges — irregular corners
+  border-radius: 3px 1px 4px 2px / 1px 3px 2px 3px;
+  padding: 0.75rem 0.85rem 0.78rem 2.1rem;
 
+  // Parchment paper background
   background:
-      radial-gradient(120% 140% at 18% 18%, rgba(255,255,255,0.10), transparent 55%),
-      linear-gradient(180deg, rgba(245,235,210,0.13), rgba(245,235,210,0.05)),
-      rgba(255,255,255,0.02);
+    radial-gradient(ellipse at 18% 12%, rgba(255, 248, 225, 0.20), transparent 42%),
+    radial-gradient(ellipse at 85% 88%, rgba(110, 65, 18, 0.18), transparent 38%),
+    linear-gradient(165deg, #d2b07e 0%, #c4a268 50%, #b08848 100%);
 
-  border: 1px solid rgba(255,255,255,0.06);
+  // Dark ink text on parchment
+  color: rgba($ink-text, 0.92);
+
+  border: 1px solid rgba(100, 62, 18, 0.38);
 
   box-shadow:
-      0 14px 30px rgba(0,0,0,0.42),
-      inset 0 1px 0 rgba(255,255,255,0.10),
-      inset 0 -1px 0 rgba(0,0,0,0.25);
+    0 5px 18px rgba(0, 0, 0, 0.48),
+    0 2px 5px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 248, 220, 0.32);
 
-  transform-origin: 18% 18%;
+  transform-origin: 18% 12%;
   transition:
-      transform 220ms ease,
-      box-shadow 260ms ease,
-      background 260ms ease;
+    transform 220ms ease,
+    box-shadow 260ms ease;
 }
 
-/* Parchment grain + edge wear */
+// Paper fiber grain on each note
 .note::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: $radius-sm;
+  border-radius: 3px 1px 4px 2px / 1px 3px 2px 3px;
   pointer-events: none;
 
   background:
-      radial-gradient(circle at 22% 28%, rgba(255,255,255,0.08), transparent 40%),
-      radial-gradient(circle at 78% 72%, rgba(0,0,0,0.10), transparent 42%),
-      linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.00));
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(130, 80, 20, 0.05) 4px,
+      rgba(130, 80, 20, 0.05) 5px
+    );
 
-  opacity: 0.55;
-  mix-blend-mode: overlay;
+  opacity: 0.70;
+  mix-blend-mode: multiply;
 }
 
-/* Pin head (glowing rune tack) */
+// Brass thumbtack / copper pin
 .note__pin {
-  @include sigil-dot($sigil-sm);
   position: absolute;
   left: 10px;
-  top: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: $sigil-sm;
+  height: $sigil-sm;
+  border-radius: 999px;
+
+  background: radial-gradient(circle at 32% 28%, rgba(255, 225, 100, 0.95), rgba(180, 110, 20, 0.90));
   box-shadow:
-      0 0 18px rgba($accent-500, 0.45),
-      0 8px 16px rgba(0, 0, 0, 0.35);
-  opacity: $op-ui;
+    0 0 10px rgba($accent-500, 0.40),
+    0 0 3px rgba($candle-bright, 0.50),
+    0 4px 8px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 240, 180, 0.60);
 }
 
-/* Wax seal (featured only) */
+// Wax seal (featured only) — deep burgundy/arcane
 .note__wax {
   display: none;
 }
@@ -206,62 +221,56 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 .note--featured .note__wax {
   display: block;
   position: absolute;
-  right: 12px;
-  top: 10px;
-  width: 18px;
-  height: 18px;
+  right: 10px;
+  top: 8px;
+  width: 20px;
+  height: 20px;
   border-radius: 999px;
 
   background:
-      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.10), transparent 55%),
-      radial-gradient(circle at 55% 60%, rgba($accent-500,0.28), transparent 62%),
-      rgba(120, 30, 110, 0.22);
+    radial-gradient(circle at 32% 28%, rgba(200, 80, 80, 0.50), transparent 50%),
+    radial-gradient(circle at 62% 65%, rgba($arcane-500, 0.35), transparent 55%),
+    rgba(140, 35, 35, 0.55);
 
   box-shadow:
-      0 0 18px rgba($accent-500, 0.18),
-      inset 0 1px 0 rgba(255,255,255,0.10),
-      inset 0 -1px 0 rgba(0,0,0,0.35);
-
-  opacity: 0.9;
+    0 0 12px rgba(180, 40, 40, 0.22),
+    inset 0 1px 0 rgba(255, 160, 160, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.35);
 }
 
 .note__title {
+  font-family: $font-serif;
   font-size: 0.95rem;
-  line-height: 1.35;
-  opacity: 0.96;
+  line-height: 1.38;
+  color: rgba($ink-text, 0.92);
 }
 
-/* Featured notes: more arcane emphasis */
+// Featured notes: slightly larger + warm emphasis
 .note--featured {
   background:
-      radial-gradient(circle at 18% 25%, rgba($accent-500, 0.22), transparent 60%),
-      linear-gradient(180deg, rgba(245,235,210,0.14), rgba(245,235,210,0.06)),
-      rgba(255,255,255,0.03);
+    radial-gradient(ellipse at 18% 12%, rgba(255, 248, 225, 0.24), transparent 42%),
+    radial-gradient(ellipse at 82% 88%, rgba(110, 65, 18, 0.22), transparent 38%),
+    linear-gradient(165deg, #d8b888 0%, #caa870 45%, #b69050 100%);
 
   box-shadow:
-      0 16px 36px rgba(0,0,0,0.46),
-      0 0 28px rgba($accent-500, 0.10),
-      inset 0 1px 0 rgba(255,255,255,0.12),
-      inset 0 -1px 0 rgba(0,0,0,0.28);
+    0 7px 22px rgba(0, 0, 0, 0.52),
+    0 0 18px rgba($accent-500, 0.08),
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 248, 220, 0.38);
 }
 
-/* “Pinned at angles” variants for physicality */
-.note--tilt0 { transform: rotate(-0.35deg); }
-.note--tilt1 { transform: rotate(0.25deg); }
-.note--tilt2 { transform: rotate(-0.15deg); }
+// Pinned at natural angles
+.note--tilt0 { transform: rotate(-0.40deg); }
+.note--tilt1 { transform: rotate(0.30deg); }
+.note--tilt2 { transform: rotate(-0.20deg); }
 
 .note:hover {
-  transform: rotate(-0.6deg) translateY(-1px);
+  transform: rotate(-0.6deg) translateY(-2px);
   box-shadow:
-      0 18px 44px rgba(0,0,0,0.52),
-      0 0 34px rgba($accent-500, 0.12),
-      inset 0 1px 0 rgba(255,255,255,0.13),
-      inset 0 -1px 0 rgba(0,0,0,0.32);
-
-  background:
-      radial-gradient(circle at 18% 25%, rgba($accent-500, 0.20), transparent 60%),
-      linear-gradient(180deg, rgba(245,235,210,0.15), rgba(245,235,210,0.06)),
-      rgba(255,255,255,0.035);
+    0 10px 28px rgba(0, 0, 0, 0.58),
+    0 0 22px rgba($accent-500, 0.10),
+    0 3px 8px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 248, 220, 0.38);
 }
 
 @media (prefers-reduced-motion: reduce) {
