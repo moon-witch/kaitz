@@ -48,11 +48,13 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
   inset: 0;
   z-index: -1;
   overflow: hidden;
+  transform: translateZ(0); /* force GPU layer — prevents iOS fixed-position shift on overscroll */
 
   img {
-    width: auto;
+    width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center top;
 
     /* slightly stronger on mobile so it reads as "place" */
     opacity: 0.28;

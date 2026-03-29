@@ -40,7 +40,7 @@ const closeMenu = () => {
 
 <style scoped lang="scss">
 .app {
-  height: 100dvh;
+  min-height: 100svh;
   overflow-x: hidden;
   width: 100dvw;
 }
