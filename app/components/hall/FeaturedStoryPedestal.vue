@@ -65,9 +65,7 @@ const featuredStory = computed(() => {
 <style scoped lang="scss">
 /* Frame: “stone plinth” + cold moonlight + arcane bloom */
 .plinthFrame {
-  border-radius: 18px;
-  overflow: hidden;
-  position: relative;
+  @include card-frame;
 
   background:
       radial-gradient(circle at 14% 18%, rgba($accent-500, 0.12), transparent 58%),
@@ -75,12 +73,6 @@ const featuredStory = computed(() => {
       linear-gradient(180deg, rgba(40, 40, 52, 0.20), rgba(12, 10, 16, 0.38)),
       rgba(10, 6, 18, 0.36);
 
-  border: 1px solid rgba(255, 255, 255, 0.09);
-
-  box-shadow:
-      0 20px 50px rgba(0,0,0,0.56),
-      inset 0 1px 0 rgba(255,255,255,0.08),
-      inset 0 -1px 0 rgba(0,0,0,0.52);
 }
 
 /* Stone vignette + faint “carving” sheen */
@@ -110,47 +102,15 @@ const featuredStory = computed(() => {
 }
 
 .plinthFrame__head {
-  position: relative;
-  z-index: 1;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 0.85rem 0.95rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
-  background:
-      linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0));
+  @include card-head;
 }
 
 .plinthFrame__plaque {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-
-  background:
-      radial-gradient(circle at 22% 30%, rgba($accent-500,0.18), transparent 55%),
-      rgba(255,255,255,0.03);
-
-  box-shadow:
-      0 10px 24px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.08);
-
-  font-family: $font-serif;
-  letter-spacing: 0.03em;
-  opacity: 0.95;
+  @include card-plaque;
 }
 
 .plinthFrame__sigil {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: rgba($accent-500, 0.85);
-  box-shadow: 0 0 16px rgba($accent-500, 0.45);
+  @include sigil-dot($sigil-md);
 }
 
 .plinthFrame__label {
@@ -158,22 +118,13 @@ const featuredStory = computed(() => {
 }
 
 .plinthFrame__more {
-  position: relative;
-  z-index: 1;
-
-  font-family: $font-sans;
-  font-size: 0.9rem;
-  text-decoration: none;
-  color: rgba($moon-100, 0.92);
-  opacity: 0.82;
-
-  &:hover { opacity: 1; }
+  @include more-link;
 }
 
 .plinthFrame__body {
   position: relative;
   z-index: 1;
-  padding: 0.95rem;
+  padding: $sp-base;
 }
 
 /* The featured story content behaves like a relic on a pedestal */
@@ -225,7 +176,7 @@ const featuredStory = computed(() => {
 
 .pedestal__synopsis {
   margin: 0.65rem 0 0;
-  opacity: 0.84;
+  opacity: $op-sub;
   line-height: 1.55;
   max-width: 62ch;
 }
@@ -257,12 +208,8 @@ const featuredStory = computed(() => {
 
 /* Decorative archival footer */
 .pedestal__footer {
-  margin-top: 0.95rem;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 0.65rem;
-  opacity: 0.70;
+  margin-top: $sp-base;
+  @include rule-divider;
 }
 
 .pedestal__rule {
@@ -271,8 +218,8 @@ const featuredStory = computed(() => {
 }
 
 .pedestal__gem {
-  width: 9px;
-  height: 9px;
+  width: $sigil-md;
+  height: $sigil-md;
   border-radius: 999px;
   background: rgba($accent-500, 0.55);
   box-shadow: 0 0 16px rgba($accent-500, 0.25);

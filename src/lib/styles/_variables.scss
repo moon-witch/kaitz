@@ -1,0 +1,83 @@
+// ─── Colour palette ───────────────────────────────────────────────────────────
+
+// Ink (dark backgrounds)
+$ink-950: #090511;
+$ink-900: #12081f;
+$ink-800: #1a0c2c;
+
+// Warm surface tones
+$wood-brown:     #6e4220;   // oak/walnut surface used in wood-grain gradients
+$parchment-warm: #f0e4c8;   // unified aged-paper highlight tint
+
+// Light / text
+$parchment-50:  #f5efe3;
+$parchment-100: #e8dcc4;
+$moon-100:      #d6d6e6;
+
+// Accent / arcane glow
+$accent-500: #b042c9;
+
+
+// ─── Typography ───────────────────────────────────────────────────────────────
+
+$font-serif: 'Cormorant Garamond', serif;
+$font-sans:  sans-serif;
+
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+$max-width: 72rem; // ~1152px
+
+// Border-radius scale
+$radius-sm:    14px;  // notes, small chips
+$radius-md:    18px;  // cards, panels  ← most-used, was missing
+$radius-frame: 20px;  // outer shells, large frames
+
+// Spacing scale (used for padding/gap/margin consistency)
+$sp-xs:   0.35rem;  // tight gaps, tiny padding (plaque inner)
+$sp-sm:   0.60rem;  // small gaps (plaque horizontal, gem gap)
+$sp-md:   0.85rem;  // card-head vertical padding
+$sp-base: 0.95rem;  // standard body padding
+$sp-lg:   1.25rem;  // section margins, header spacing
+
+
+// ─── Shadows ──────────────────────────────────────────────────────────────────
+
+$shadow-soft: 0 12px 40px rgba(0,0,0,0.35);  // light elevation (HallCard, ParchmentFrame)
+$shadow-card: 0 18px 46px rgba(0,0,0,0.52);  // standard card depth
+$shadow-lift: 0 22px 52px rgba(0,0,0,0.58);  // hover / lifted state
+
+
+// ─── Text opacity hierarchy ───────────────────────────────────────────────────
+// Use these instead of arbitrary opacity values on text / UI elements.
+
+$op-dim:   0.70;  // decorative rules, footer ornaments
+$op-muted: 0.78;  // secondary text, descriptions
+$op-sub:   0.84;  // synopses, subtitles
+$op-body:  0.92;  // body / prose
+$op-ui:    0.95;  // UI labels, plaque text
+
+
+// ─── Sigil / gem sizes ────────────────────────────────────────────────────────
+
+$sigil-sm: 8px;   // note pins, rule gems
+$sigil-md: 9px;   // standard sigils, spine gems
+
+
+// ─── Breakpoints ──────────────────────────────────────────────────────────────
+
+$bp-tablet:  720px;
+$bp-desktop: 900px;
+
+
+// ─── Z-layers ─────────────────────────────────────────────────────────────────
+
+$z-bg:     -10;
+$z-header:  40;
+
+
+// ─── Transitions ──────────────────────────────────────────────────────────────
+
+$transition:      0.2s ease-in-out;
+$transition-glow: 0.26s ease;   // box-shadow / glow
+$transition-lift: 0.24s ease;   // transform

@@ -21,7 +21,7 @@ defineProps<{
 
 <style scoped lang="scss">
 .hallCard {
-  border-radius: 18px;
+  border-radius: $radius-md;
   background: rgba(255, 255, 255, 0.03);
   box-shadow: $shadow-soft;
   border: 1px solid rgba(255, 255, 255, 0.08);

@@ -35,7 +35,7 @@ defineProps<{
 
 .hallHeader__sub {
   margin: 0.35rem 0 0;
-  opacity: 0.78;
+  opacity: $op-muted;
   justify-self: flex-start;
   max-width: 30ch;
 }
@@ -51,9 +51,7 @@ defineProps<{
 }
 
 .hallHeader__sigil {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
+  @include sigil-dot(10px);
   background: rgba($accent-500, 0.7);
   box-shadow: 0 0 18px rgba($accent-500, 0.35);
 }

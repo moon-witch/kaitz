@@ -8,7 +8,7 @@
 <style scoped lang="scss">
 .parchment {
   position: relative;
-  border-radius: 18px;
+  border-radius: $radius-md;
   padding: 1.1rem 1rem 1.15rem;
   background:
       radial-gradient(circle at 30% 20%, rgba(255,255,255,0.06), transparent 60%),

@@ -1,27 +1,58 @@
-// Color tokens
+// ─── Color tokens ────────────────────────────────────────────────────────────
 $ink-950: #090511;
 $ink-900: #12081f;
 $ink-800: #1a0c2c;
 
-$parchment-50: #f5efe3;
+$parchment-50:  #f5efe3;
 $parchment-100: #e8dcc4;
 
-$moon-100: #d6d6e6;
-$accent-500: #b042c9;
+$moon-100:    #d6d6e6;
+$accent-500:  #b042c9;
 
-// Typography
+// ─── Typography ──────────────────────────────────────────────────────────────
 $font-serif: 'Cormorant Garamond', serif;
-$font-sans: sans-serif;
+$font-sans:  sans-serif;
 
-// Layout
+// ─── Spacing scale ───────────────────────────────────────────────────────────
+$sp-xs:   0.35rem;
+$sp-sm:   0.6rem;
+$sp-md:   0.85rem;
+$sp-base: 0.95rem;
+$sp-lg:   1.25rem;
+
+// ─── Layout ──────────────────────────────────────────────────────────────────
 $max-width: 72rem; // ~1152px
+
+// ─── Border radii ────────────────────────────────────────────────────────────
+$radius-sm:    14px;
+$radius-md:    18px;
 $radius-frame: 20px;
-$shadow-soft: 0 12px 40px rgba(0,0,0,0.35);
 
-// Z-layers
-$z-bg: -10;
-$z-header: 40;
+// ─── Shadows ─────────────────────────────────────────────────────────────────
+$shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.35);
+$shadow-card: 0 18px 46px rgba(0, 0, 0, 0.52);
+$shadow-lift: 0 22px 52px rgba(0, 0, 0, 0.58);
 
-// Other
-$transition: 0.2s ease-in-out;
+// ─── Opacity hierarchy ───────────────────────────────────────────────────────
+$op-dim:   0.70; // decorative rules, footer ornaments
+$op-muted: 0.78; // secondary text, descriptions
+$op-sub:   0.84; // synopses, subtitles
+$op-body:  0.92; // body / prose
+$op-ui:    0.95; // UI labels, plaque text
 
+// ─── Sigil / gem sizes ───────────────────────────────────────────────────────
+$sigil-sm: 8px;
+$sigil-md: 9px;
+
+// ─── Transitions ─────────────────────────────────────────────────────────────
+$transition:      0.2s ease-in-out;
+$transition-glow: 0.26s ease;
+$transition-lift: 0.24s ease;
+
+// ─── Breakpoints ─────────────────────────────────────────────────────────────
+$bp-tablet:  720px;
+$bp-desktop: 900px;
+
+// ─── Z-layers ────────────────────────────────────────────────────────────────
+$z-bg:     -10;
+$z-header:  40;

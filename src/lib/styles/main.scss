@@ -1,5 +1,5 @@
-@use 'variables';
-@use '../fonts/fonts.scss';
+@use 'variables' as *;
+@use '../assets/fonts/fonts';
 
 :root {
   color-scheme: dark;
@@ -44,7 +44,6 @@ a:hover {
     margin: 1em 0;
     padding-left: 1rem;
     border-left: 2px solid rgba(214,214,230,0.35);
-    opacity: $op-body;
+    opacity: 0.92;
   }
 }
-

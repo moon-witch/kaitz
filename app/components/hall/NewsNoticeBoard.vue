@@ -60,24 +60,15 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 <style scoped lang="scss">
 /* Frame: wood + lacquer + faint runic varnish */
 .boardFrame {
+  @include card-frame;
   margin-top: 1rem;
   height: 30rem;
-  border-radius: 18px;
-  overflow: hidden;
-  position: relative;
 
   background:
       radial-gradient(circle at 18% 22%, rgba(255,255,255,0.05), transparent 60%),
       radial-gradient(circle at 90% 10%, rgba($accent-500,0.10), transparent 55%),
       linear-gradient(180deg, rgba(110, 66, 32, 0.22), rgba(30, 18, 12, 0.30)),
       rgba(10, 6, 18, 0.38);
-
-  border: 1px solid rgba(255, 255, 255, 0.09);
-
-  box-shadow:
-      0 18px 46px rgba(0,0,0,0.52),
-      inset 0 1px 0 rgba(255,255,255,0.09),
-      inset 0 -1px 0 rgba(0,0,0,0.50);
 }
 
 /* Varnish + subtle grain */
@@ -113,48 +104,15 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 }
 
 .boardFrame__head {
-  position: relative;
-  z-index: 1;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 0.85rem 0.95rem;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
-  background:
-      linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0));
+  @include card-head;
 }
 
 .boardFrame__plaque {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-
-  background:
-      radial-gradient(circle at 20% 20%, rgba($accent-500,0.20), transparent 55%),
-      rgba(255,255,255,0.03);
-
-  box-shadow:
-      0 10px 24px rgba(0,0,0,0.35),
-      inset 0 1px 0 rgba(255,255,255,0.08);
-
-  font-family: $font-serif;
-  letter-spacing: 0.03em;
-  opacity: 0.95;
+  @include card-plaque;
 }
 
 .boardFrame__plaqueRune {
-  width: 9px;
-  height: 9px;
-  border-radius: 999px;
-  background: rgba($accent-500, 0.85);
-  box-shadow: 0 0 16px rgba($accent-500, 0.45);
+  @include sigil-dot($sigil-md);
 }
 
 .boardFrame__plaqueText {
@@ -162,16 +120,7 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 }
 
 .boardFrame__more {
-  position: relative;
-  z-index: 1;
-
-  font-family: $font-sans;
-  font-size: 0.9rem;
-  text-decoration: none;
-  color: rgba($moon-100, 0.92);
-  opacity: 0.82;
-
-  &:hover { opacity: 1; }
+  @include more-link;
 }
 
 .board {
@@ -198,7 +147,7 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
   text-decoration: none;
   color: rgba($moon-100, 0.96);
 
-  border-radius: 14px;
+  border-radius: $radius-sm;
   padding: 0.75rem 0.8rem 0.75rem 2.1rem;
 
   background:
@@ -225,7 +174,7 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 14px;
+  border-radius: $radius-sm;
   pointer-events: none;
 
   background:
@@ -239,17 +188,14 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 
 /* Pin head (glowing rune tack) */
 .note__pin {
+  @include sigil-dot($sigil-sm);
   position: absolute;
   left: 10px;
   top: 12px;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba($accent-500, 0.85);
   box-shadow:
       0 0 18px rgba($accent-500, 0.45),
-      0 8px 16px rgba(0,0,0,0.35);
-  opacity: 0.95;
+      0 8px 16px rgba(0, 0, 0, 0.35);
+  opacity: $op-ui;
 }
 
 /* Wax seal (featured only) */
