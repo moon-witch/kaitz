@@ -2,7 +2,8 @@
 import FeaturedStoryPedestal from "~/components/hall/FeaturedStoryPedestal.vue";
 import DiaryLectern from "~/components/hall/DiaryLectern.vue";
 import NewsNoticeBoard from "~/components/hall/NewsNoticeBoard.vue";
-import ThemesShelf from "~/components/hall/ThemesShelf.vue";
+
+useSeoMeta({ title: "Library of Kaitz" });
 
 const { data: news } = await useAsyncData("news", () => $fetch("/api/news"));
 const { data: diary } = await useAsyncData("diary", () => $fetch("/api/diary"));

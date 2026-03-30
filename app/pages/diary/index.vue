@@ -401,8 +401,6 @@ watch(mode, val => {
     rgba($ink-950, 0.72) 0%,
     rgba($ink-950, 0.0) 100%
   );
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 
   .mode-btn { pointer-events: auto; }
 }
