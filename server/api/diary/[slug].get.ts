@@ -20,8 +20,6 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 404, statusMessage: "Diary entry not found" });
         }
 
-        console.log(entry);
-
         return entry;
     } catch (err: any) {
         if (err?.statusCode) throw err;

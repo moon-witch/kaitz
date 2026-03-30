@@ -24,19 +24,26 @@ const CARD_H  = 68;
 const EXP_MAX = 580;
 
 const stageHeight = ref(0);
+const stageEl = ref<HTMLElement | null>(null);
 
 function vw() { return document.documentElement.clientWidth; }
 function vh() { return document.documentElement.clientHeight; }
 function expW() { return Math.min(EXP_MAX, vw() - (vw() < 600 ? 96 : 32)); }
 
-function centerPos(): Pos {
+// Viewport-space center for the expanded card (used while card is position:fixed)
+function centerPosViewport(): { x: number; y: number } {
   const W = vw(), H = vh();
-  const scrollY = window.scrollY ?? 0;
   return {
     x: (W - expW()) / 2,
-    y: scrollY + (W < 600 ? 150 : Math.max(200, (H - 520) / 2)),
-    rotate: 0,
+    y: W < 600 ? 150 : Math.max(200, (H - 520) / 2),
   };
+}
+
+// Absolute-space center — scrollTop offset included, used for pushOutOfCenter at init
+function centerPos(): Pos {
+  const sTop = stageEl.value?.scrollTop ?? 0;
+  const { x, y } = centerPosViewport();
+  return { x, y: y + sTop, rotate: 0 };
 }
 
 function pushOutOfCenter(x: number, y: number): { x: number; y: number } {
@@ -164,13 +171,18 @@ function flyToCenter(slug: string): Promise<void> {
     const from = scatter.value[slug];
     if (!el || !from) { resolve(); return; }
 
-    const to  = centerPos();
+    const cp  = centerPosViewport();
     const toW = expW();
-    const s   = { x: from.x, y: from.y, r: from.rotate, w: CARD_W };
-    el.style.zIndex = "8";
+    const scrollTop = stageEl.value?.scrollTop ?? 0;
+
+    // Convert absolute scatter coords → viewport coords, then switch to fixed
+    const s = { x: from.x, y: from.y - scrollTop, r: from.rotate, w: CARD_W };
+    el.style.position = 'fixed';
+    el.style.zIndex   = "8";
+    setT(el, s.x, s.y, s.r, s.w); // snap to viewport position before animating
 
     animate(s, {
-      x: to.x, y: to.y, r: 0, w: toW,
+      x: cp.x, y: cp.y, r: 0, w: toW,
       duration: 580,
       ease: "outCubic",
       onUpdate: () => setT(el, s.x, s.y, s.r, s.w),
@@ -185,19 +197,28 @@ function flyBack(slug: string): Promise<void> {
     const to = scatter.value[slug];
     if (!el || !to) { resolve(); return; }
 
-    const cp = centerPos();
-    const s  = { x: cp.x, y: cp.y, r: 0, w: expW(), p: 0 };
+    const cp        = centerPosViewport();
+    const scrollTop = stageEl.value?.scrollTop ?? 0;
+    // Target in viewport coords so card lands at its absolute position in view
+    const targetVY  = to.y - scrollTop;
+    const s = { x: cp.x, y: cp.y, r: 0, w: expW(), p: 0 };
     el.style.zIndex = "3";
 
     animate(s, {
-      x: to.x, y: to.y, r: to.rotate, w: CARD_W, p: 1,
+      x: to.x, y: targetVY, r: to.rotate, w: CARD_W, p: 1,
       duration: 600,
       ease: "inOutCubic",
       onUpdate: () => {
         const peak = Math.sin(s.p * Math.PI);
         setT(el, s.x, s.y, s.r, s.w, peak * 20, peak * -7, 1, 1 - peak * 0.32);
       },
-      complete: () => { el.style.zIndex = "1"; resolve(); },
+      complete: () => {
+        // Switch back to absolute; snap to correct absolute position
+        el.style.position = '';
+        setT(el, to.x, to.y, to.rotate, CARD_W);
+        el.style.zIndex = "1";
+        resolve();
+      },
     });
   });
 }
@@ -245,6 +266,16 @@ function formatDate(d?: string | null) {
   });
 }
 
+const showScrollTop = ref(false);
+
+function onStageScroll() {
+  showScrollTop.value = (stageEl.value?.scrollTop ?? 0) > 300;
+}
+
+function scrollToTop() {
+  stageEl.value?.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 onMounted(() => {
   if (mode.value === "artisan") nextTick(initArtisan);
 });
@@ -275,8 +306,9 @@ watch(mode, val => {
         <div v-if="pending" class="artisan-status">Lade Einträge…</div>
         <p v-else-if="!entries?.length" class="artisan-status">Noch keine Einträge vorhanden.</p>
 
-        <!-- Scattered cards stage -->
-        <div v-else class="artisan-stage" :style="{ height: stageHeight + 'px' }">
+        <!-- Scattered cards stage: fixed viewport overlay, internally scrollable -->
+        <div v-else ref="stageEl" class="artisan-stage" @scroll.passive="onStageScroll">
+          <div class="artisan-stage__inner" :style="{ height: stageHeight + 'px' }">
           <div
             v-for="entry in entries"
             :key="entry.slug"
@@ -302,6 +334,7 @@ watch(mode, val => {
                 </footer>
               </div>
             </div>
+          </div>
           </div>
         </div>
 
@@ -345,6 +378,17 @@ watch(mode, val => {
       </template>
 
     </HallScene>
+
+    <Transition name="scrolltop">
+      <button
+        v-if="mode === 'artisan' && showScrollTop"
+        class="diary-scrolltop"
+        aria-label="Zurück nach oben"
+        @click="scrollToTop"
+      >
+        <span class="diary-scrolltop__arrow" aria-hidden="true"></span>
+      </button>
+    </Transition>
   </section>
 </template>
 
@@ -356,7 +400,8 @@ watch(mode, val => {
   min-height: 100vh;
 
   &--artisan {
-    // Scrollable — stage height drives page expansion
+    min-height: 0; // all artisan content is position:fixed — section needs no height
+    overflow: hidden;
   }
 }
 
@@ -450,10 +495,24 @@ watch(mode, val => {
 // ── Artisan stage ─────────────────────────────────────────────────────────────
 
 .artisan-stage {
-  position: relative;  // document-flow; height drives page scroll
-  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 5rem; // leave footer visible below the notes area
   z-index: 5;
-  pointer-events: none; // stage itself non-interactive; cards opt-in below
+  overflow-y: scroll;
+  overscroll-behavior: contain; // prevent stage scroll from propagating to window
+  pointer-events: auto; // receives scroll events; cards also interactive
+  scrollbar-width: none; // Firefox
+
+  &::-webkit-scrollbar { display: none; } // Chrome/Safari
+}
+
+.artisan-stage__inner {
+  position: relative;
+  width: 100%;
+  pointer-events: none; // cards opt back in
 }
 
 // ── Artisan card ──────────────────────────────────────────────────────────────
@@ -462,11 +521,11 @@ watch(mode, val => {
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: auto;
   width: 190px; // overridden by JS
   box-sizing: border-box;
   will-change: transform;
   cursor: pointer;
-  pointer-events: auto;
 
   background: linear-gradient(
     158deg,
@@ -853,6 +912,63 @@ watch(mode, val => {
 
   &::after { content: ' →'; font-style: normal; }
   &:hover  { color: rgba($accent-500, 0.85); }
+}
+
+// ── Scroll-to-top (artisan mode) ──────────────────────────────────────────────
+
+.diary-scrolltop {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 20;
+
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba($accent-500, 0.30);
+  background: rgba($ink-800, 0.82);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  box-shadow:
+    0 0 14px rgba($accent-500, 0.18),
+    0 4px 16px rgba(0, 0, 0, 0.55);
+
+  transition:
+    background  220ms ease,
+    box-shadow  220ms ease,
+    border-color 220ms ease;
+
+  &:hover {
+    background: rgba($ink-800, 0.95);
+    border-color: rgba($accent-500, 0.60);
+    box-shadow:
+      0 0 22px rgba($accent-500, 0.35),
+      0 4px 20px rgba(0, 0, 0, 0.60);
+  }
+}
+
+.diary-scrolltop__arrow {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-top:   1.5px solid rgba($moon-100, 0.80);
+  border-right: 1.5px solid rgba($moon-100, 0.80);
+  transform: translateY(2px) rotate(-45deg);
+}
+
+.scrolltop-enter-active,
+.scrolltop-leave-active {
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+.scrolltop-enter-from,
+.scrolltop-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 // ── Reduced motion ────────────────────────────────────────────────────────────
