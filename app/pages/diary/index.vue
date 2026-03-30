@@ -20,22 +20,22 @@ interface Pos { x: number; y: number; rotate: number }
 const scatter = ref<Record<string, Pos>>({});
 
 const CARD_W  = 190;
-const CARD_H  = 68;  // estimated collapsed card height
+const CARD_H  = 68;
 const EXP_MAX = 580;
 
-function vw() { return window.innerWidth; }
-function vh() { return window.innerHeight; }
-function expW() { return Math.min(EXP_MAX, vw() - 32); }
+function vw() { return document.documentElement.clientWidth; }
+function vh() { return document.documentElement.clientHeight; }
+function expW() { return Math.min(EXP_MAX, vw() - (vw() < 600 ? 96 : 32)); }
 
 function centerPos(): Pos {
+  const W = vw(), H = vh();
   return {
-    x: (vw() - expW()) / 2,
-    y: Math.max(165, (vh() - 520) / 2),
+    x: (W - expW()) / 2,
+    y: W < 600 ? 150 : Math.max(200, (H - 520) / 2),
     rotate: 0,
   };
 }
 
-// Push a point out of the center expanded-card zone
 function pushOutOfCenter(x: number, y: number): { x: number; y: number } {
   const W  = vw();
   const eW = expW();
@@ -44,29 +44,27 @@ function pushOutOfCenter(x: number, y: number): { x: number; y: number } {
   const zL = cp.x - buf;
   const zR = cp.x + eW + buf;
   const zT = cp.y - buf;
-  const zB = cp.y + 540;       // approx expanded card height
+  const zB = cp.y + 420;
 
-  // Collapsed card footprint: CARD_W × ~70px
   const overlapH = x + CARD_W > zL && x < zR;
   const overlapV = y + 70 > zT && y < zB;
   if (overlapH && overlapV) {
-    const roomLeft  = zL - CARD_W - 52;
-    const roomRight = W - CARD_W - 130 - zR;
+    const roomLeft  = zL - CARD_W - 16;
+    const roomRight = W - CARD_W - 16 - zR;
     if (roomLeft >= roomRight) {
-      return { x: Math.max(52, zL - CARD_W - 10), y };
+      return { x: Math.max(16, zL - CARD_W - 10), y };
     } else {
-      return { x: Math.min(W - CARD_W - 130, zR + 10), y };
+      return { x: Math.min(W - CARD_W - 16, zR + 10), y };
     }
   }
   return { x, y };
 }
 
-// Iterative separation: push overlapping cards apart until no pair exceeds 10% area overlap
 function separateCards(res: Record<string, Pos>, slugs: string[]): void {
   const W = vw(), H = vh();
-  const pX = 52, xMax = W - CARD_W - 130;
-  const yMin = 165, yMax = H - 90;
-  const areaLimit = CARD_W * CARD_H * 0.10; // 10% of one card's area
+  const pX = 16, xMax = W - CARD_W - 16;
+  const yMin = W < 600 ? 400 : 200, yMax = H - 90;
+  const areaLimit = CARD_W * CARD_H * 0.10;
 
   for (let iter = 0; iter < 40; iter++) {
     let dirty = false;
@@ -81,7 +79,6 @@ function separateCards(res: Record<string, Pos>, slugs: string[]): void {
         if (ox <= 0 || oy <= 0 || ox * oy <= areaLimit) continue;
 
         dirty = true;
-        // Reduce overlap on the axis that needs less movement
         const reduceX = ox - areaLimit / oy;
         const reduceY = oy - areaLimit / ox;
         const half = 0.5;
@@ -110,9 +107,10 @@ function computeScatter() {
   if (!entries.value?.length) return;
   const W = vw(), H = vh(), n = entries.value.length;
   const cols = Math.max(2, Math.ceil(Math.sqrt(n * W / H)));
-  const pX = 52, pY = 165;
-  const xMax = W - CARD_W - 130;
-  const yMin = 165;
+  const pX = 16;
+  const yMin = W < 600 ? 400 : 200;
+  const pY = yMin;
+  const xMax = W - CARD_W - 16;
   const yMax = H - 90;
   const totalCols = Math.max(1, cols - 1);
   const totalRows = Math.max(1, Math.ceil(n / cols) - 1 || 1);
@@ -152,7 +150,7 @@ function setT(
 
 function flyToCenter(slug: string): Promise<void> {
   return new Promise(resolve => {
-    const el  = cardEls[slug];
+    const el   = cardEls[slug];
     const from = scatter.value[slug];
     if (!el || !from) { resolve(); return; }
 
@@ -178,7 +176,6 @@ function flyBack(slug: string): Promise<void> {
     if (!el || !to) { resolve(); return; }
 
     const cp = centerPos();
-    // s.p drives deformation: 0 = no deform, peaks mid-flight, back to 0 at end
     const s  = { x: cp.x, y: cp.y, r: 0, w: expW(), p: 0 };
     el.style.zIndex = "3";
 
@@ -187,7 +184,7 @@ function flyBack(slug: string): Promise<void> {
       duration: 600,
       ease: "inOutCubic",
       onUpdate: () => {
-        const peak = Math.sin(s.p * Math.PI); // arc: 0 → 1 → 0
+        const peak = Math.sin(s.p * Math.PI);
         setT(el, s.x, s.y, s.r, s.w, peak * 20, peak * -7, 1, 1 - peak * 0.32);
       },
       complete: () => { el.style.zIndex = "1"; resolve(); },
@@ -252,18 +249,18 @@ watch(mode, val => {
   <section class="diary-page" :class="{ 'diary-page--artisan': mode === 'artisan' }">
     <HallScene>
 
+      <!-- ── Shared floating header ─────────────────────────────────── -->
+      <div class="artisan-head" aria-label="Tagebuch">
+        <p class="artisan-head__eyebrow">Archiv des Schreibens</p>
+        <h1 class="artisan-head__title">Tagebuch</h1>
+        <button class="mode-btn" @click="mode = mode === 'artisan' ? 'structured' : 'artisan'">
+          <span class="mode-btn__icon" aria-hidden="true">{{ mode === 'artisan' ? '⊞' : '✦' }}</span>
+          {{ mode === 'artisan' ? 'Geordnet' : 'Artisan' }}
+        </button>
+      </div>
+
       <!-- ── ARTISAN MODE ───────────────────────────────────────────── -->
       <template v-if="mode === 'artisan'">
-
-        <!-- Floating page header -->
-        <div class="artisan-head" aria-label="Tagebuch">
-          <p class="artisan-head__eyebrow">Archiv des Schreibens</p>
-          <h1 class="artisan-head__title">Tagebuch</h1>
-          <button class="mode-btn" @click="mode = 'structured'">
-            <span class="mode-btn__icon" aria-hidden="true">⊞</span>
-            Geordnet
-          </button>
-        </div>
 
         <div v-if="pending" class="artisan-status">Lade Einträge…</div>
         <p v-else-if="!entries?.length" class="artisan-status">Noch keine Einträge vorhanden.</p>
@@ -303,15 +300,6 @@ watch(mode, val => {
       <!-- ── STRUCTURED MODE ──────────────────────────────────────────── -->
       <template v-else>
         <div class="diary-page__inner">
-          <header class="diary-page__head">
-            <p class="diary-page__eyebrow">Archiv des Schreibens</p>
-            <h1 class="diary-page__title">Tagebuch</h1>
-            <button class="mode-btn mode-btn--light" @click="mode = 'artisan'">
-              <span class="mode-btn__icon" aria-hidden="true">✦</span>
-              Artisan
-            </button>
-          </header>
-
           <div v-if="pending" class="diary-page__status">Lade Einträge…</div>
 
           <div v-else-if="entries?.length" class="tome">
@@ -388,17 +376,6 @@ watch(mode, val => {
     background: rgba(255, 255, 255, 0.07);
   }
 
-  &--light {
-    color: rgba(55, 28, 8, 0.45);
-    border-color: rgba(100, 62, 18, 0.25);
-    background: rgba(200, 150, 80, 0.06);
-
-    &:hover {
-      color: rgba(55, 28, 8, 0.75);
-      border-color: rgba(100, 62, 18, 0.45);
-      background: rgba(200, 150, 80, 0.12);
-    }
-  }
 }
 
 .mode-btn__icon {
@@ -432,7 +409,7 @@ watch(mode, val => {
 
 .artisan-head__eyebrow {
   font-family: $font-serif;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: rgba($moon-100, 0.34);
@@ -442,7 +419,7 @@ watch(mode, val => {
 
 .artisan-head__title {
   font-family: $font-serif;
-  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-size: clamp(1.75rem, 5vw, 2.9rem);
   color: $moon-100;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -475,15 +452,15 @@ watch(mode, val => {
 // ── Artisan card ──────────────────────────────────────────────────────────────
 
 .artisan-card {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 190px; // overridden by JS
+  box-sizing: border-box;
   will-change: transform;
   cursor: pointer;
   pointer-events: auto;
 
-  // Parchment base
   background: linear-gradient(
     158deg,
     #d4b483 0%,
@@ -500,7 +477,6 @@ watch(mode, val => {
     0 1px 2px  rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 240, 200, 0.18);
 
-  // Paper grain overlay
   &::before {
     content: '';
     position: absolute;
@@ -516,7 +492,6 @@ watch(mode, val => {
     );
   }
 
-  // Candlelight shimmer (active only)
   &::after {
     content: '';
     position: absolute;
@@ -565,18 +540,15 @@ watch(mode, val => {
 .artisan-card__date {
   display: block;
   font-family: $font-serif;
-  font-size: 0.70rem;
-  color: rgba(55, 28, 8, 0.50);
+  font-size: 0.80rem;
+  color: rgba(55, 28, 8, 0.70);
   letter-spacing: 0.10em;
   font-style: italic;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  .is-active & {
-    color: rgba(55, 28, 8, 0.56);
-    margin-bottom: 0.2rem;
-  }
+  .is-active & { color: rgba(55, 28, 8, 0.9); margin-bottom: 0.2rem; }
 }
 
 .artisan-card__title {
@@ -606,9 +578,7 @@ watch(mode, val => {
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.44s cubic-bezier(0.4, 0, 0.2, 1);
 
-  .is-active & {
-    grid-template-rows: 1fr;
-  }
+  .is-active & { grid-template-rows: 1fr; }
 }
 
 .artisan-card__body-inner {
@@ -625,17 +595,22 @@ watch(mode, val => {
 .artisan-card__body {
   font-family: $font-serif;
   font-size: 0.91rem;
-  line-height: 1.78;
+  line-height: 1.62;
   color: $ink-text;
   position: relative;
   z-index: 2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 
   &.prose {
-    :deep(p)            { margin: 0 0 0.9em; }
-    :deep(p:last-child) { margin-bottom: 0; }
-    :deep(em)           { font-style: italic; }
-    :deep(strong)       { font-weight: 700; }
-    :deep(h3)           { margin: 1.2em 0 0.4em; font-size: 1.05em; }
+    :deep(p)     { margin: 0; display: inline; }
+    :deep(p + p) { &::before { content: ' '; } }
+    :deep(em)    { font-style: italic; }
+    :deep(strong){ font-weight: 700; }
+    :deep(h3)    { display: inline; font-size: 1em; }
   }
 }
 
@@ -652,7 +627,7 @@ watch(mode, val => {
   font-size: 0.78rem;
   letter-spacing: 0.10em;
   font-style: italic;
-  color: rgba(55, 28, 8, 0.58);
+  color: $ink-text;
   text-decoration: none;
   transition: color $transition;
 
@@ -665,36 +640,11 @@ watch(mode, val => {
 .diary-page__inner {
   max-width: 640px;
   margin: 0 auto;
-  padding: 3.5rem 1.5rem 8rem;
+  padding: 10rem 1.5rem 8rem;
 
   @media (max-width: $bp-tablet) {
-    padding: 2.5rem 1rem 6rem;
+    padding: 9rem 1rem 6rem;
   }
-}
-
-.diary-page__head {
-  text-align: center;
-  margin-bottom: 2.8rem;
-}
-
-.diary-page__eyebrow {
-  font-family: $font-serif;
-  font-size: 0.76rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: rgba($moon-100, 0.38);
-  font-style: italic;
-  margin: 0 0 0.5rem;
-}
-
-.diary-page__title {
-  font-family: $font-serif;
-  font-size: clamp(2rem, 5vw, 2.9rem);
-  color: $moon-100;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  margin: 0;
-  @include inscription-glow(5s, 0s);
 }
 
 .diary-page__status {
@@ -858,17 +808,22 @@ watch(mode, val => {
 .tome__body {
   font-family: $font-serif;
   font-size: 0.97rem;
-  line-height: 1.82;
+  line-height: 1.62;
   color: $ink-text;
   position: relative;
   z-index: 2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 
   &.prose {
-    :deep(p)            { margin: 0 0 0.9em; }
-    :deep(p:last-child) { margin-bottom: 0; }
-    :deep(em)           { font-style: italic; }
-    :deep(strong)       { font-weight: 700; }
-    :deep(h3)           { margin: 1.2em 0 0.4em; font-size: 1.05em; }
+    :deep(p)     { margin: 0; display: inline; }
+    :deep(p + p) { &::before { content: ' '; } }
+    :deep(em)    { font-style: italic; }
+    :deep(strong){ font-weight: 700; }
+    :deep(h3)    { display: inline; font-size: 1em; }
   }
 }
 
