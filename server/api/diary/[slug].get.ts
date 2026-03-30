@@ -1,4 +1,4 @@
-import { directusFetch, publishedFilter } from "../../utils/directus";
+import { directusFetch } from "../../utils/directus";
 
 export default defineEventHandler(async (event) => {
     try {
@@ -9,10 +9,9 @@ export default defineEventHandler(async (event) => {
 
         const res = await directusFetch<{ data: any[] }>("/items/diary_entries", {
             query: {
-                ...publishedFilter(),
                 "filter[slug][_eq]": slug,
                 limit: 1,
-                fields: "id,title,slug,content,featured,mood_tag,date_created,date_updated,status",
+                fields: "id,title,slug,content,featured,status,date_created",
             },
         });
 

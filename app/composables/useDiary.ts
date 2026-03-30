@@ -3,10 +3,9 @@ export type DiaryEntry = {
     title: string;
     slug: string;
     content?: string | null;
-    mood_tag?: string | null;
     featured?: boolean | null;
+    status?: string | null;
     date_created?: string | null;
-    date_updated?: string | null;
 };
 
 export function useDiary() {

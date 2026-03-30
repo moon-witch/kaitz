@@ -23,15 +23,18 @@ const CARD_W  = 190;
 const CARD_H  = 68;
 const EXP_MAX = 580;
 
+const stageHeight = ref(0);
+
 function vw() { return document.documentElement.clientWidth; }
 function vh() { return document.documentElement.clientHeight; }
 function expW() { return Math.min(EXP_MAX, vw() - (vw() < 600 ? 96 : 32)); }
 
 function centerPos(): Pos {
   const W = vw(), H = vh();
+  const scrollY = window.scrollY ?? 0;
   return {
     x: (W - expW()) / 2,
-    y: W < 600 ? 150 : Math.max(200, (H - 520) / 2),
+    y: scrollY + (W < 600 ? 150 : Math.max(200, (H - 520) / 2)),
     rotate: 0,
   };
 }
@@ -60,10 +63,10 @@ function pushOutOfCenter(x: number, y: number): { x: number; y: number } {
   return { x, y };
 }
 
-function separateCards(res: Record<string, Pos>, slugs: string[]): void {
-  const W = vw(), H = vh();
+function separateCards(res: Record<string, Pos>, slugs: string[], stageH: number): void {
+  const W = vw();
   const pX = 16, xMax = W - CARD_W - 16;
-  const yMin = W < 600 ? 400 : 200, yMax = H - 90;
+  const yMin = W < 600 ? 400 : 200, yMax = stageH - 90;
   const areaLimit = CARD_W * CARD_H * 0.10;
 
   for (let iter = 0; iter < 40; iter++) {
@@ -109,13 +112,20 @@ function computeScatter() {
   const cols = Math.max(2, Math.ceil(Math.sqrt(n * W / H)));
   const pX = 16;
   const yMin = W < 600 ? 400 : 200;
-  const pY = yMin;
   const xMax = W - CARD_W - 16;
-  const yMax = H - 90;
+
+  // Expand stage so every row has at least 120px of vertical breathing room
+  const nRows = Math.ceil(n / cols);
+  const minCellH = 120;
+  const requiredH = yMin + nRows * minCellH + 100;
+  const stageH = Math.max(H, requiredH);
+  stageHeight.value = stageH;
+
+  const yMax = stageH - 90;
   const totalCols = Math.max(1, cols - 1);
-  const totalRows = Math.max(1, Math.ceil(n / cols) - 1 || 1);
+  const totalRows = Math.max(1, nRows - 1 || 1);
   const cW = (xMax - pX) / totalCols;
-  const cH = (yMax - pY) / totalRows;
+  const cH = (yMax - yMin) / totalRows;
 
   const res: Record<string, Pos> = {};
   entries.value.forEach((e, i) => {
@@ -124,13 +134,13 @@ function computeScatter() {
     const jX  = Math.sin(i * 2.399) * cW * 0.22;
     const jY  = Math.cos(i * 1.618) * cH * 0.22;
     let x = Math.max(pX, Math.min(xMax, pX + col * cW + jX));
-    let y = Math.max(yMin, Math.min(yMax, pY + row * cH + jY));
+    let y = Math.max(yMin, Math.min(yMax, yMin + row * cH + jY));
     ({ x, y } = pushOutOfCenter(x, y));
     res[e.slug] = { x, y, rotate: Math.sin(i * 1.309) * 11 };
   });
 
   const slugs = entries.value.map(e => e.slug);
-  separateCards(res, slugs);
+  separateCards(res, slugs, stageH);
   scatter.value = res;
 }
 
@@ -266,7 +276,7 @@ watch(mode, val => {
         <p v-else-if="!entries?.length" class="artisan-status">Noch keine Einträge vorhanden.</p>
 
         <!-- Scattered cards stage -->
-        <div v-else class="artisan-stage">
+        <div v-else class="artisan-stage" :style="{ height: stageHeight + 'px' }">
           <div
             v-for="entry in entries"
             :key="entry.slug"
@@ -346,8 +356,7 @@ watch(mode, val => {
   min-height: 100vh;
 
   &--artisan {
-    height: 100vh;
-    overflow: hidden;
+    // Scrollable — stage height drives page expansion
   }
 }
 
@@ -435,22 +444,22 @@ watch(mode, val => {
   font-family: $font-serif;
   color: rgba($moon-100, 0.45);
   font-style: italic;
+  pointer-events: none;
 }
 
 // ── Artisan stage ─────────────────────────────────────────────────────────────
 
 .artisan-stage {
-  position: fixed;
-  inset: 0;
+  position: relative;  // document-flow; height drives page scroll
+  width: 100%;
   z-index: 5;
-  overflow: hidden;
   pointer-events: none; // stage itself non-interactive; cards opt-in below
 }
 
 // ── Artisan card ──────────────────────────────────────────────────────────────
 
 .artisan-card {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 190px; // overridden by JS

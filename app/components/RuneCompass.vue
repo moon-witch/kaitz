@@ -265,10 +265,6 @@ onBeforeUnmount(() => {
     top: 20px;
     right: 6px;
   }
-
-  @media (min-width: 721px) and (max-width: 1024px) {
-    width: 200px;
-  }
 }
 
 .arcane-compass__svg {
