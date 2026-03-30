@@ -197,15 +197,21 @@ function flyBack(slug: string): Promise<void> {
     const to = scatter.value[slug];
     if (!el || !to) { resolve(); return; }
 
-    const cp        = centerPosViewport();
     const scrollTop = stageEl.value?.scrollTop ?? 0;
-    // Target in viewport coords so card lands at its absolute position in view
-    const targetVY  = to.y - scrollTop;
-    const s = { x: cp.x, y: cp.y, r: 0, w: expW(), p: 0 };
-    el.style.zIndex = "3";
+    const cp        = centerPosViewport();
+
+    // Convert the current fixed (viewport) position to absolute (stage-content) coords
+    // before the animation starts so the entire flight stays in absolute space —
+    // no position switch mid-animation or at completion, which caused a one-frame snap.
+    const startAbsY = cp.y + scrollTop;
+    el.style.position = '';
+    el.style.zIndex   = "3";
+    setT(el, cp.x, startAbsY, 0, expW());
+
+    const s = { x: cp.x, y: startAbsY, r: 0, w: expW(), p: 0 };
 
     animate(s, {
-      x: to.x, y: targetVY, r: to.rotate, w: CARD_W, p: 1,
+      x: to.x, y: to.y, r: to.rotate, w: CARD_W, p: 1,
       duration: 600,
       ease: "inOutCubic",
       onUpdate: () => {
@@ -213,8 +219,6 @@ function flyBack(slug: string): Promise<void> {
         setT(el, s.x, s.y, s.r, s.w, peak * 20, peak * -7, 1, 1 - peak * 0.32);
       },
       complete: () => {
-        // Switch back to absolute; snap to correct absolute position
-        el.style.position = '';
         setT(el, to.x, to.y, to.rotate, CARD_W);
         el.style.zIndex = "1";
         resolve();
