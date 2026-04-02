@@ -6,6 +6,10 @@
   color-scheme: dark;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html, body {
   height: 100%;
   overscroll-behavior: none;

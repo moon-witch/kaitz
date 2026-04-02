@@ -142,7 +142,7 @@ function scrollToTop() {
   font-family: $font-serif;
   font-style: italic;
   letter-spacing: 0.02em;
-  color: rgba($moon-100, 0.55);
+  color: rgba($moon-100, 0.68);
 
   &__inner {
     @include container;

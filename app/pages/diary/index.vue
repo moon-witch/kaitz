@@ -253,6 +253,37 @@ function initArtisan() {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+//  RESIZE HANDLING
+// ─────────────────────────────────────────────────────────────────────
+let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onResize() {
+  if (mode.value !== "artisan" || isAnimating.value) return;
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    computeScatter();
+    nextTick(() => {
+      for (const e of entries.value ?? []) {
+        const el  = cardEls[e.slug];
+        const pos = scatter.value[e.slug];
+        if (!el || !pos) continue;
+        if (e.slug === activeSlug.value) continue; // active handled below
+        setT(el, pos.x, pos.y, pos.rotate, CARD_W);
+      }
+      if (activeSlug.value) {
+        const el = cardEls[activeSlug.value];
+        if (el) {
+          const cp  = centerPosViewport();
+          const toW = expW();
+          el.style.position = "fixed";
+          setT(el, cp.x, cp.y, 0, toW);
+        }
+      }
+    });
+  }, 80);
+}
+
+// ─────────────────────────────────────────────────────────────────────
 //  STRUCTURED MODE
 // ─────────────────────────────────────────────────────────────────────
 const structuredActive = ref("");
@@ -282,6 +313,12 @@ function scrollToTop() {
 
 onMounted(() => {
   if (mode.value === "artisan") nextTick(initArtisan);
+  window.addEventListener("resize", onResize, { passive: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", onResize);
+  if (resizeTimer) clearTimeout(resizeTimer);
 });
 
 watch(mode, val => {
@@ -465,10 +502,10 @@ watch(mode, val => {
 
 .artisan-head__eyebrow {
   font-family: $font-serif;
-  font-size: 0.76rem;
-  letter-spacing: 0.28em;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba($moon-100, 0.34);
+  color: rgba($moon-100, 0.55);
   font-style: italic;
   margin: 0 0 0.4rem;
 }
@@ -491,7 +528,7 @@ watch(mode, val => {
   align-items: center;
   justify-content: center;
   font-family: $font-serif;
-  color: rgba($moon-100, 0.45);
+  color: rgba($moon-100, 0.65);
   font-style: italic;
   pointer-events: none;
 }
@@ -825,8 +862,8 @@ watch(mode, val => {
 
 .tome__date {
   font-family: $font-serif;
-  font-size: 0.76rem;
-  color: rgba(55, 28, 8, 0.55);
+  font-size: 0.80rem;
+  color: rgba(55, 28, 8, 0.70);
   letter-spacing: 0.1em;
   font-style: italic;
   white-space: nowrap;

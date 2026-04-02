@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
                 ...publishedFilter(),
                 "filter[story][slug][_eq]": storySlug,
                 sort: "chapter_number",
-                fields: "id,story,chapter_number,title,slug,excerpt,date_created,date_updated,status",
+                fields: "id,story,chapter_number,title,slug,status",
             },
         });
 

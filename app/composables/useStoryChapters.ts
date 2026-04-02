@@ -4,9 +4,7 @@ export type ChapterSummary = {
     chapter_number: number;
     title: string;
     slug: string;
-    excerpt?: string | null;
-    date_created?: string | null;
-    date_updated?: string | null;
+    status?: string | null;
 };
 
 export function useStoryChapters(storySlug: string) {

@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
                 "filter[chapter_number][_eq]": chapterNumber,
                 limit: 1,
                 fields:
-                    "id,story,chapter_number,title,slug,content,excerpt,date_created,date_updated,status",
+                    "id,story,chapter_number,title,slug,content,status",
             },
         });
 
