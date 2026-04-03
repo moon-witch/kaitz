@@ -181,17 +181,15 @@ onMounted(() => {
 // ── Outer wrapper ─────────────────────────────────────────────────────────────
 
 .news-wrap {
-  width: 320px;
+  width: 90vw;
   margin: 0 auto;
   padding: 5rem 1rem 5rem;
 
   @media (min-width: $bp-tablet) {
-    width: 680px;
     padding: 6rem 2rem 6rem;
   }
 
   @media (min-width: $bp-desktop) {
-    width: 1060px;
     padding: 6rem 3rem 6rem;
   }
 }

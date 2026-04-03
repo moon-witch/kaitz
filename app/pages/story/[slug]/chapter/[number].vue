@@ -397,12 +397,12 @@ onMounted(() => {
 // ── Outer layout ──────────────────────────────────────────────────────────────
 
 .chapter-outer {
-  width: 320px;
+  width: 90vw;
   margin: 0 auto;
   padding: 6rem 1rem 6rem;
 
   @media (min-width: $bp-tablet) {
-    width: 600px;
+    width: 90vw;
     padding: 6rem 2.4rem 6rem;
   }
 
@@ -410,7 +410,7 @@ onMounted(() => {
     display: flex;
     align-items: flex-start;
     gap: 2rem;
-    width: min(calc(100vw - 6.4rem), 1140px);
+    width: min(calc(100vw - 3rem), 1140px);
     padding: 6rem 3.2rem 6rem;
   }
 }

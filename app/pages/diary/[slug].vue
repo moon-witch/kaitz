@@ -210,7 +210,7 @@ onMounted(() => {
 // ── Outer wrapper ─────────────────────────────────────────────────────────────
 
 .entry-wrap {
-  width: 320px;
+  width: 90vw;
   margin: 0 auto;
   padding: 6rem 2rem 6rem;
 
@@ -219,12 +219,10 @@ onMounted(() => {
   }
 
   @media (min-width: $bp-tablet) {
-    width: 600px;
     padding: 6rem 2.4rem 6rem;
   }
 
   @media (min-width: $bp-desktop) {
-    width: 1000px;
     padding: 6rem 3.2rem 6rem;
   }
 }
