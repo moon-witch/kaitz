@@ -1,3 +1,5 @@
+import type { PaginationParams } from "./useStories";
+
 export type NewsItem = {
     id: number | string;
     title: string;
@@ -8,6 +10,11 @@ export type NewsItem = {
     date_updated?: string | null;
 };
 
-export function useNews() {
-    return useAsyncData<NewsItem[]>("news", () => $fetch("/api/news"));
+export function useNews(opts?: PaginationParams) {
+    const page = opts?.page ?? 1;
+    const limit = opts?.limit ?? 20;
+    return useAsyncData<NewsItem[]>(
+        `news:p${page}:l${limit}`,
+        () => $fetch("/api/news", { query: { page, limit } })
+    );
 }

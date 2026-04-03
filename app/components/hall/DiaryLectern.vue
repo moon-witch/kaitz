@@ -10,6 +10,7 @@ type DiaryEntry = {
 
 const props = defineProps<{
   entries: DiaryEntry[] | null | undefined;
+  loading?: boolean;
 }>();
 
 const latest = computed(() => (props.entries ?? [])[0] ?? null);
@@ -34,7 +35,15 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
       </div>
 
       <ParchmentSurface>
-        <div v-if="latest" class="lectern">
+        <div v-if="loading" class="skeleton" aria-busy="true" aria-label="Wird geladen">
+          <div class="skeleton__title"></div>
+          <div class="skeleton__line"></div>
+          <div class="skeleton__line skeleton__line--short"></div>
+          <div class="skeleton__line"></div>
+          <div class="skeleton__line skeleton__line--short"></div>
+        </div>
+
+        <div v-else-if="latest" class="lectern">
           <h3 class="lectern__title">{{ latest.title }}</h3>
 
           <div class="lectern__excerpt">
@@ -49,6 +58,7 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
         </div>
 
         <div v-else class="empty">Noch kein Tagebucheintrag verfügbar.</div>
+
       </ParchmentSurface>
     </div>
   </div>
@@ -216,6 +226,49 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
 .empty {
   opacity: 0.70;
   color: rgba($ink-text, 0.70);
+}
+
+// Loading skeleton
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.skeleton__title,
+.skeleton__line {
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba($ink-text, 0.12) 0%,
+    rgba($ink-text, 0.22) 50%,
+    rgba($ink-text, 0.12) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+
+.skeleton__title {
+  height: 1.2rem;
+  width: 65%;
+}
+
+.skeleton__line {
+  height: 0.85rem;
+  width: 100%;
+
+  &--short { width: 48%; }
+}
+
+@keyframes skeletonShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__title,
+  .skeleton__line { animation: none; }
 }
 
 // WYSIWYG text — dark ink on parchment

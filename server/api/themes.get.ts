@@ -1,6 +1,6 @@
 import { directusFetch } from "../utils/directus";
 
-export default defineEventHandler(async () => {
+export default defineCachedEventHandler(async () => {
     try {
         const res = await directusFetch<{ data: any[] }>("/items/themes", {
             query: {
@@ -15,9 +15,7 @@ export default defineEventHandler(async () => {
         throw createError({
             statusCode: 500,
             statusMessage: "Failed to fetch themes from Directus",
-            data: {
-                message: err?.message,
-            },
+            data: { message: err?.message },
         });
     }
-});
+}, { maxAge: 60 * 10 });

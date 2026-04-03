@@ -5,10 +5,9 @@ import NewsNoticeBoard from "~/components/hall/NewsNoticeBoard.vue";
 
 useSeoMeta({ title: "Library of Kaitz" });
 
-const { data: news } = await useAsyncData("news", () => $fetch("/api/news"));
-const { data: diary } = await useAsyncData("diary", () => $fetch("/api/diary"));
-const { data: stories } = await useAsyncData("stories", () => $fetch("/api/stories"));
-const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"));
+const { data: news, pending: newsPending } = await useAsyncData("news", () => $fetch("/api/news"));
+const { data: diary, pending: diaryPending } = await useAsyncData("diary", () => $fetch("/api/diary"));
+const { data: stories, pending: storiesPending } = await useAsyncData("stories", () => $fetch("/api/stories"));
 </script>
 
 <template>
@@ -21,9 +20,9 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
       <HallHeader />
 
       <div class="hall__grid">
-        <FeaturedStoryPedestal class="hall__pedestal" :stories="stories" />
-        <NewsNoticeBoard class="hall__board" :news="news" />
-        <DiaryLectern class="hall__lectern" :entries="diary" />
+        <FeaturedStoryPedestal class="hall__pedestal" :stories="stories" :loading="storiesPending" />
+        <NewsNoticeBoard class="hall__board" :news="news" :loading="newsPending" />
+        <DiaryLectern class="hall__lectern" :entries="diary" :loading="diaryPending" />
       </div>
 
     </HallScene>
@@ -134,18 +133,5 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
   .hall__pedestal { transform: translateY(10px); }
   .hall__board { transform: translateY(-6px); }
   .hall__lectern { transform: translateY(18px); }
-}
-
-/* Themes shelf spacing */
-.hall__shelf {
-  margin-top: 1.15rem;
-
-  @media (min-width: 720px) {
-    margin-top: 1.25rem;
-  }
-
-  @media (min-width: 900px) {
-    margin-top: 1.35rem;
-  }
 }
 </style>

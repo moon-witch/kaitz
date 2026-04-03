@@ -1,6 +1,7 @@
 import { directusFetch, publishedFilter } from "../../utils/directus";
+import { sanitizeContent } from "../../utils/sanitize";
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     try {
         const slug = getRouterParam(event, "slug");
         if (!slug) {
@@ -21,7 +22,10 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 404, statusMessage: "News item not found" });
         }
 
-        return item;
+        return {
+            ...item,
+            content: sanitizeContent(item.content),
+        };
     } catch (err: any) {
         if (err?.statusCode) throw err;
         throw createError({
@@ -30,4 +34,7 @@ export default defineEventHandler(async (event) => {
             data: { message: err?.message },
         });
     }
+}, {
+    maxAge: 60 * 5,
+    getKey: (event) => `news-item:${getRouterParam(event, "slug")}`,
 });

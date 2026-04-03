@@ -1,3 +1,5 @@
+import type { PaginationParams } from "./useStories";
+
 export type DiaryEntry = {
     id: number | string;
     title: string;
@@ -8,6 +10,11 @@ export type DiaryEntry = {
     date_created?: string | null;
 };
 
-export function useDiary() {
-    return useAsyncData<DiaryEntry[]>("diary", () => $fetch("/api/diary"));
+export function useDiary(opts?: PaginationParams) {
+    const page = opts?.page ?? 1;
+    const limit = opts?.limit ?? 20;
+    return useAsyncData<DiaryEntry[]>(
+        `diary:p${page}:l${limit}`,
+        () => $fetch("/api/diary", { query: { page, limit } })
+    );
 }

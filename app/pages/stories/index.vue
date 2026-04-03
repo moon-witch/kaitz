@@ -76,6 +76,158 @@ watchPostEffect(() => {
   });
 });
 
+// ── Book smoke effect ────────────────────────────────────────────────────────
+//
+// WebGL canvas at z-index 9990, sandwiched between the page content and the
+// expanding book wrap (9999). Smoke expands from viewport centre faster than
+// the book scales, filling the screen before the parchment pages fully cover it.
+
+const SMOKE_VERT = `attribute vec2 a_pos; void main(){gl_Position=vec4(a_pos,0.0,1.0);}`;
+
+const SMOKE_FRAG = `
+precision mediump float;
+uniform vec2  u_res;
+uniform float u_expand; // 0→1, expansion radius (eased in JS)
+uniform float u_fade;   // 0→1, fade-out progress
+
+float hash(vec2 p) {
+  p = fract(p * vec2(127.1, 311.7));
+  p += dot(p, p + 19.19);
+  return fract(p.x * p.y);
+}
+float noise(vec2 p) {
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(hash(i),                  hash(i + vec2(1.0, 0.0)), u.x),
+    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
+    u.y);
+}
+float fbm(vec2 p) {
+  float v = 0.0, a = 0.5;
+  mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
+  for (int i = 0; i < 5; i++) { v += a * noise(p); p = m * p; a *= 0.5; }
+  return v;
+}
+
+void main() {
+  vec2 uv = gl_FragCoord.xy / u_res;
+  float ar = u_res.x / u_res.y;
+
+  // Aspect-corrected distance from viewport centre (always the book origin)
+  vec2 d = vec2((uv.x - 0.5) * ar, uv.y - 0.5);
+  float dist = length(d);
+
+  // Maximum radius needed to cover the farthest corner
+  float maxR = length(vec2(0.5 * ar, 0.5)) * 1.05;
+  float expandR = u_expand * maxR;
+
+  // Organic blob — perturb radius with FBM sampled along the direction angle
+  vec2 dir = dist > 0.001 ? d / dist : vec2(1.0, 0.0);
+  vec2 q = vec2(
+    fbm(dir * 1.8 + u_expand * 0.30),
+    fbm(dir * 1.8 + vec2(5.2, 1.3))
+  );
+  float blobNoise = fbm(dir * 1.5 + 1.6 * q);
+  float radiusMod = 0.72 + blobNoise * 0.56; // 0.72 – 1.28
+  float smokeR = expandR * radiusMod;
+
+  // Soft smoke edge
+  float smoke = 1.0 - smoothstep(smokeR - 0.12, smokeR + 0.06, dist);
+
+  // Interior cloud texture
+  float inner = fbm(uv * 3.5 + u_expand * 0.15);
+  float density = smoke * (0.55 + inner * 0.45);
+
+  // Arcane smoke: ink-900 (#12081f) depths → accent-500 (#b042c9) wisps
+  vec3 col = mix(
+    vec3(0.071, 0.031, 0.122),
+    vec3(0.690, 0.259, 0.788),
+    inner * 0.55 + blobNoise * 0.25
+  );
+
+  gl_FragColor = vec4(col, density * (1.0 - u_fade) * 0.88);
+}
+`;
+
+function createBookSmoke(): void {
+  if (typeof window === 'undefined') return;
+
+  const EXPAND_MS  = 650;  // ms for smoke to reach full viewport
+  const FADE_START = 820;  // ms before fade begins
+  const FADE_MS    = 380;  // ms for full fade
+  const TOTAL_MS   = FADE_START + FADE_MS + 50;
+
+  const dpr    = Math.min(window.devicePixelRatio ?? 1, 2);
+  const canvas = document.createElement('canvas');
+  canvas.width  = Math.round(window.innerWidth  * dpr);
+  canvas.height = Math.round(window.innerHeight * dpr);
+  canvas.style.cssText =
+    'position:fixed;inset:0;width:100%;height:100%;' +
+    'z-index:9990;pointer-events:none;';
+
+  const glCtx = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false }) as WebGLRenderingContext | null;
+  if (!glCtx) return;
+  const gl: WebGLRenderingContext = glCtx;
+
+  document.body.appendChild(canvas);
+
+  const vs = gl.createShader(gl.VERTEX_SHADER)!;
+  gl.shaderSource(vs, SMOKE_VERT); gl.compileShader(vs);
+  const fs = gl.createShader(gl.FRAGMENT_SHADER)!;
+  gl.shaderSource(fs, SMOKE_FRAG); gl.compileShader(fs);
+  const prog = gl.createProgram()!;
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) { canvas.remove(); return; }
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const posLoc = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(posLoc);
+  gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+  const uRes    = gl.getUniformLocation(prog, 'u_res');
+  const uExpand = gl.getUniformLocation(prog, 'u_expand');
+  const uFade   = gl.getUniformLocation(prog, 'u_fade');
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+
+  let raf = 0;
+  const t0 = performance.now();
+
+  function render(now: number): void {
+    const elapsed = now - t0;
+
+    // Ease-out-quad: fast burst then decelerates
+    const rawExpand = Math.min(1, elapsed / EXPAND_MS);
+    const expand    = 1 - (1 - rawExpand) * (1 - rawExpand);
+
+    const fade = elapsed > FADE_START
+      ? Math.min(1, (elapsed - FADE_START) / FADE_MS)
+      : 0;
+
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1f(uExpand, expand);
+    gl.uniform1f(uFade,   fade);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    if (elapsed < TOTAL_MS) {
+      raf = requestAnimationFrame(render);
+    } else {
+      cancelAnimationFrame(raf);
+      canvas.remove();
+    }
+  }
+
+  raf = requestAnimationFrame(render);
+}
+
 // ── Book interaction ──────────────────────────────────────────────────────────
 
 const router     = useRouter();
@@ -109,6 +261,8 @@ function isTouchPrimary(): boolean {
 }
 
 function expandIntoBook(slug: string, el: HTMLElement, hue: number): void {
+  createBookSmoke();
+
   const vW   = window.innerWidth;
   const vH   = window.innerHeight;
   // Use CSS layout dimensions (un-transformed); rotated 90° the book is
@@ -347,7 +501,6 @@ function onPageClick(e: MouseEvent): void {
 .stacks-hd {
   text-align: center;
   margin-bottom: 4rem;
-  will-change: transform, opacity;
 }
 
 .stacks-hd__rules {
@@ -397,7 +550,6 @@ function onPageClick(e: MouseEvent): void {
 
 .shelf {
   margin-bottom: 3.6rem;
-  will-change: transform, opacity;
 }
 
 // ── Shelf label ───────────────────────────────────────────────────────────────

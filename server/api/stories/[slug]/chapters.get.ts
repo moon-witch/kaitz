@@ -1,13 +1,12 @@
 import { directusFetch, publishedFilter } from "../../../utils/directus";
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     try {
         const storySlug = getRouterParam(event, "slug");
         if (!storySlug) {
             throw createError({ statusCode: 400, statusMessage: "Missing story slug" });
         }
 
-        // Query chapters by related story.slug
         const res = await directusFetch<{ data: any[] }>("/items/chapters", {
             query: {
                 ...publishedFilter(),
@@ -26,4 +25,7 @@ export default defineEventHandler(async (event) => {
             data: { message: err?.message },
         });
     }
+}, {
+    maxAge: 60 * 5,
+    getKey: (event) => `chapters:${getRouterParam(event, "slug")}`,
 });

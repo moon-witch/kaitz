@@ -1,6 +1,11 @@
 import svgLoader from "vite-svg-loader";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+    modules: ["@nuxt/image"],
+    image: {
+        quality: 80,
+        format: ["webp", "jpg"],
+    },
     typescript: { strict: true },
     app: {
         head: {

@@ -278,7 +278,6 @@ onMounted(() => {
 .notice {
   position: relative;
   box-sizing: border-box;
-  will-change: transform, opacity;
   padding: 3.2rem 2.8rem 2.6rem;
 
   background: linear-gradient(
@@ -418,7 +417,6 @@ onMounted(() => {
   text-transform: uppercase;
   color: rgba(50, 24, 6, 0.68);
   margin: 0 0 0.55rem;
-  will-change: transform, opacity;
 }
 
 .notice__title {
@@ -429,7 +427,6 @@ onMounted(() => {
   letter-spacing: 0.05em;
   line-height: 1.2;
   margin: 0 0 0.55rem;
-  will-change: transform, opacity;
 }
 
 .notice__date {
@@ -439,7 +436,6 @@ onMounted(() => {
   letter-spacing: 0.10em;
   color: rgba(50, 24, 6, 0.70);
   margin: 0;
-  will-change: transform, opacity;
 }
 
 // ── Ornamental divider ────────────────────────────────────────────────────────
@@ -452,7 +448,6 @@ onMounted(() => {
   gap: 0.7rem;
   margin: 1.5rem 0 1.6rem;
   transform-origin: left center;
-  will-change: transform, opacity;
 }
 
 .rule__line {
@@ -486,7 +481,6 @@ onMounted(() => {
   font-size: clamp(0.97rem, 2.2vw, 1.06rem);
   line-height: 1.82;
   color: $ink-text;
-  will-change: transform, opacity;
 
   &.prose {
     :deep(p) {
@@ -553,7 +547,6 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   margin-top: 2.4rem;
-  will-change: transform, opacity;
 }
 
 .foot-rule {

@@ -12,6 +12,16 @@ export type Story = {
     series?: number | string | null;
 };
 
-export function useStories() {
-    return useAsyncData<Story[]>("stories", () => $fetch("/api/stories"));
+export type PaginationParams = {
+    page?: number;
+    limit?: number;
+};
+
+export function useStories(opts?: PaginationParams) {
+    const page = opts?.page ?? 1;
+    const limit = opts?.limit ?? 20;
+    return useAsyncData<Story[]>(
+        `stories:p${page}:l${limit}`,
+        () => $fetch("/api/stories", { query: { page, limit } })
+    );
 }

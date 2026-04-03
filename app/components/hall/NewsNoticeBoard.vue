@@ -9,6 +9,7 @@ type News = {
 const props = defineProps<{
   news: News[] | null | undefined;
   limit?: number;
+  loading?: boolean;
 }>();
 
 const featured = computed(() => (props.news ?? []).filter((n) => n.featured).slice(0, 2));
@@ -27,6 +28,11 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
     </div>
 
     <div class="board">
+      <div v-if="loading" class="board__skeleton" aria-busy="true" aria-label="Wird geladen">
+        <div v-for="i in 4" :key="i" class="skeleton-note"></div>
+      </div>
+
+      <template v-else>
       <div v-if="featured.length" class="board__featured">
         <NuxtLink
             v-for="(n, i) in featured"
@@ -53,6 +59,11 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
           <div class="note__title">{{ n.title }}</div>
         </NuxtLink>
       </div>
+
+      <div v-if="!loading && (!news || news.length === 0)" class="board__empty">
+        Noch keine Neuigkeiten verfügbar.
+      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -130,6 +141,23 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
   position: relative;
   z-index: 1;
   padding: 0.95rem;
+  overflow-y: auto;
+  max-height: calc(30rem - 3rem); /* full frame height minus header */
+
+  /* Arcane scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba($accent-500, 0.35) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba($accent-500, 0.35);
+    border-radius: 2px;
+  }
 }
 
 .board__featured {
@@ -277,5 +305,47 @@ const list = computed(() => (props.news ?? []).slice(0, props.limit ?? 6));
 @media (prefers-reduced-motion: reduce) {
   .note { transition: none; }
   .note:hover { transform: none; }
+}
+
+// Loading skeleton notes
+.board__skeleton {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.skeleton-note {
+  height: 2.6rem;
+  border-radius: 3px 1px 4px 2px / 1px 3px 2px 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(210, 176, 126, 0.18) 0%,
+    rgba(210, 176, 126, 0.30) 50%,
+    rgba(210, 176, 126, 0.18) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.8s ease-in-out infinite;
+
+  &:nth-child(2) { animation-delay: 0.15s; }
+  &:nth-child(3) { animation-delay: 0.30s; }
+  &:nth-child(4) { animation-delay: 0.45s; }
+}
+
+@keyframes skeletonShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// Empty state
+.board__empty {
+  font-family: $font-serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: rgba($moon-100, 0.50);
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-note { animation: none; }
 }
 </style>

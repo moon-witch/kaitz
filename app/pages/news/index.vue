@@ -190,7 +190,8 @@ onMounted(() => {
   }
 
   @media (min-width: $bp-desktop) {
-    padding: 6rem 3rem 6rem;
+    width: 75vw;
+    padding: 6rem 0;
   }
 }
 
@@ -199,7 +200,6 @@ onMounted(() => {
 .broadsheet {
   position: relative;
   box-sizing: border-box;
-  will-change: transform, opacity;
 
   background: linear-gradient(
     168deg,
@@ -264,7 +264,6 @@ onMounted(() => {
   z-index: 2;
   text-align: center;
   padding: 2rem 2.8rem 0;
-  will-change: transform, opacity;
 
   @media (max-width: $bp-tablet) {
     padding: 1.6rem 1.6rem 0;
@@ -321,7 +320,6 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   padding: 0 2.8rem 2.4rem;
-  will-change: transform, opacity;
 
   @media (max-width: $bp-tablet) {
     padding: 0 1.4rem 1.8rem;

@@ -1,6 +1,7 @@
 import { directusFetch } from "../../utils/directus";
+import { sanitizeContent } from "../../utils/sanitize";
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     try {
         const slug = getRouterParam(event, "slug");
         if (!slug) {
@@ -20,7 +21,10 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 404, statusMessage: "Diary entry not found" });
         }
 
-        return entry;
+        return {
+            ...entry,
+            content: sanitizeContent(entry.content),
+        };
     } catch (err: any) {
         if (err?.statusCode) throw err;
         throw createError({
@@ -29,4 +33,7 @@ export default defineEventHandler(async (event) => {
             data: { message: err?.message },
         });
     }
+}, {
+    maxAge: 60 * 5,
+    getKey: (event) => `diary-entry:${getRouterParam(event, "slug")}`,
 });

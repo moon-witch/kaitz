@@ -1,6 +1,6 @@
 import { directusFetch, publishedFilter } from "../../utils/directus";
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     try {
         const slug = getRouterParam(event, "slug");
         if (!slug) {
@@ -31,4 +31,7 @@ export default defineEventHandler(async (event) => {
             data: { message: err?.message },
         });
     }
+}, {
+    maxAge: 60 * 5,
+    getKey: (event) => `story:${getRouterParam(event, "slug")}`,
 });

@@ -1,6 +1,7 @@
 import { directusFetch, publishedFilter } from "../../utils/directus";
+import { sanitizeContent } from "../../utils/sanitize";
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     try {
         const key = getRouterParam(event, "key");
         if (!key) {
@@ -21,7 +22,10 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 404, statusMessage: "Page not found" });
         }
 
-        return page;
+        return {
+            ...page,
+            content: sanitizeContent(page.content),
+        };
     } catch (err: any) {
         if (err?.statusCode) throw err;
         throw createError({
@@ -30,4 +34,7 @@ export default defineEventHandler(async (event) => {
             data: { message: err?.message },
         });
     }
+}, {
+    maxAge: 60 * 10,
+    getKey: (event) => `page:${getRouterParam(event, "key")}`,
 });

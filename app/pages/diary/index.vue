@@ -565,7 +565,6 @@ watch(mode, val => {
   pointer-events: auto;
   width: 190px; // overridden by JS
   box-sizing: border-box;
-  will-change: transform;
   cursor: pointer;
 
   background: linear-gradient(

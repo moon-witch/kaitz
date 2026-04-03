@@ -408,10 +408,10 @@ onMounted(() => {
 
   @media (min-width: $bp-desktop) {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 2rem;
-    width: min(calc(100vw - 3rem), 1140px);
-    padding: 6rem 3.2rem 6rem;
+    width: 80vw;
+    padding: 6rem 0;
   }
 }
 
@@ -773,7 +773,6 @@ onMounted(() => {
 .chapter-scroll {
   position: relative;
   box-sizing: border-box;
-  will-change: transform, opacity;
   padding: 3.2rem 2.8rem 2.8rem;
 
   background: linear-gradient(
@@ -845,7 +844,6 @@ onMounted(() => {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   margin: 0 0 0.6rem;
-  will-change: transform, opacity;
 }
 
 .chapter-scroll__title {
@@ -856,7 +854,6 @@ onMounted(() => {
   letter-spacing: 0.06em;
   line-height: 1.2;
   margin: 0;
-  will-change: transform, opacity;
 }
 
 // ── Ornamental divider ────────────────────────────────────────────────────────
@@ -869,7 +866,6 @@ onMounted(() => {
   gap: 0.7rem;
   margin: 1.5rem 0 1.8rem;
   transform-origin: left center;
-  will-change: transform, opacity;
 }
 
 .rule__line {
@@ -897,7 +893,6 @@ onMounted(() => {
   font-size: clamp(1.02rem, 2.4vw, 1.13rem);
   line-height: 1.88;
   color: $ink-text;
-  will-change: transform, opacity;
 
   // Drop cap on first paragraph
   &.prose :deep(p:first-child)::first-letter {
@@ -973,7 +968,6 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   margin-top: 2.6rem;
-  will-change: transform, opacity;
 }
 
 .foot-rule {

@@ -1,6 +1,7 @@
 import { directusFetch, publishedFilter } from "../../../../utils/directus";
+import { sanitizeContent } from "../../../../utils/sanitize";
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
     try {
         const storySlug = getRouterParam(event, "slug");
         const numStr = getRouterParam(event, "number");
@@ -20,8 +21,7 @@ export default defineEventHandler(async (event) => {
                 "filter[story][slug][_eq]": storySlug,
                 "filter[chapter_number][_eq]": chapterNumber,
                 limit: 1,
-                fields:
-                    "id,story,chapter_number,title,slug,content,status",
+                fields: "id,story,chapter_number,title,slug,content,status",
             },
         });
 
@@ -30,7 +30,10 @@ export default defineEventHandler(async (event) => {
             throw createError({ statusCode: 404, statusMessage: "Chapter not found" });
         }
 
-        return chapter;
+        return {
+            ...chapter,
+            content: sanitizeContent(chapter.content),
+        };
     } catch (err: any) {
         if (err?.statusCode) throw err;
         throw createError({
@@ -39,4 +42,7 @@ export default defineEventHandler(async (event) => {
             data: { message: err?.message },
         });
     }
+}, {
+    maxAge: 60 * 5,
+    getKey: (event) => `chapter:${getRouterParam(event, "slug")}:${getRouterParam(event, "number")}`,
 });

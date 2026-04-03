@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import RuneCompass from "~/components/RuneCompass.vue";
 import RuneMenu from "~/components/RuneMenu.vue";
+import EntranceSequence from "~/components/EntranceSequence.vue";
 
 const menuOpen = ref(false);
 
@@ -30,6 +31,8 @@ function scrollToTop() {
 
 <template>
   <div class="app">
+    <EntranceSequence />
+
     <div class="bg">
       <div class="bg__base"></div>
       <div class="bg__grain" aria-hidden="true"></div>

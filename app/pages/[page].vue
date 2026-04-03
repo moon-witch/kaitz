@@ -234,7 +234,6 @@ onMounted(() => {
 .scroll {
   position: relative;
   box-sizing: border-box;
-  will-change: transform, opacity;
   padding: 3.6rem 3.2rem 3rem;
 
   background: linear-gradient(
@@ -305,7 +304,6 @@ onMounted(() => {
   letter-spacing: 0.06em;
   line-height: 1.2;
   margin: 0;
-  will-change: transform, opacity;
 }
 
 // ── Ornamental divider ────────────────────────────────────────────────────────
@@ -318,7 +316,6 @@ onMounted(() => {
   gap: 0.55rem;
   margin: 1.6rem 0 1.8rem;
   transform-origin: left center;
-  will-change: transform, opacity;
 }
 
 .rule__line {
@@ -359,7 +356,6 @@ onMounted(() => {
   font-size: clamp(0.97rem, 2.2vw, 1.06rem);
   line-height: 1.82;
   color: $ink-text;
-  will-change: transform, opacity;
 
   &.prose {
     :deep(p) {
@@ -426,7 +422,6 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   margin-top: 2.4rem;
-  will-change: transform, opacity;
 }
 
 .foot-rule {

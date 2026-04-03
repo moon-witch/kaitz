@@ -209,7 +209,6 @@ onMounted(() => {
   max-width: 780px;
   margin: 0 auto;
   padding: 6rem 1.5rem 6rem;
-  will-change: transform, opacity;
 
   @media (min-width: $bp-tablet)  { padding: 6rem 2.4rem 6rem; }
   @media (min-width: $bp-desktop) { padding: 6rem 3rem 6rem; }
@@ -244,7 +243,6 @@ onMounted(() => {
 .story-hd {
   text-align: center;
   margin-bottom: 2.4rem;
-  will-change: transform, opacity;
 }
 
 // Series badge
@@ -324,7 +322,6 @@ onMounted(() => {
   position: relative;
   padding: 1.8rem 2rem 1.6rem;
   margin-bottom: 2.8rem;
-  will-change: transform, opacity;
 
   background: linear-gradient(
     162deg,
@@ -382,7 +379,6 @@ onMounted(() => {
 // ── Chapters section ──────────────────────────────────────────────────────────
 
 .chapters-section {
-  will-change: transform, opacity;
 }
 
 .chapters-section__hd {

@@ -1,6 +1,6 @@
 import { directusFetch, publishedFilter } from "../utils/directus";
 
-export default defineEventHandler(async () => {
+export default defineCachedEventHandler(async () => {
     try {
         const res = await directusFetch<{ data: any[] }>("/items/series", {
             query: {
@@ -18,4 +18,4 @@ export default defineEventHandler(async () => {
             data: { message: err?.message },
         });
     }
-});
+}, { maxAge: 60 * 10 });
