@@ -12,6 +12,9 @@ const closeMenu = () => {
   menuOpen.value = false;
 };
 
+const route = useRoute();
+const isHall = computed(() => route.path === '/');
+
 const showScrollTop = ref(false);
 
 if (process.client) {
@@ -38,11 +41,11 @@ function scrollToTop() {
     <RuneCompass :open="menuOpen" @click="toggleMenu" />
     <RuneMenu :open="menuOpen" @close="closeMenu" />
 
-    <main class="main">
+    <main class="main" :class="{ 'main--hall': isHall }">
       <slot />
     </main>
 
-    <footer class="footer">
+    <footer v-if="!isHall" class="footer">
       <div class="footer__inner">
         <NuxtLink to="/about">Über den Autor</NuxtLink>
         <NuxtLink to="/imprint">Impressum</NuxtLink>
@@ -132,6 +135,11 @@ function scrollToTop() {
   @include container;
   padding: 2rem 0 0 0;
   flex: 1;
+
+  &--hall {
+    padding: 0;
+    max-width: none;
+  }
 }
 
 .footer {

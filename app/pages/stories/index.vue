@@ -82,6 +82,21 @@ const router     = useRouter();
 const tappedBook = ref<string | null>(null);
 const bookEls: Record<string, HTMLElement> = {};
 
+const hoveredBook = ref<string | null>(null);
+let hoverLeaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onBookHoverEnter(slug: string): void {
+  if (hoverLeaveTimer) { clearTimeout(hoverLeaveTimer); hoverLeaveTimer = null; }
+  hoveredBook.value = slug;
+}
+
+function onBookHoverLeave(): void {
+  hoverLeaveTimer = setTimeout(() => {
+    hoveredBook.value = null;
+    hoverLeaveTimer = null;
+  }, 100);
+}
+
 // Mid-colour of each hue — used for the full-screen cover overlay
 const BOOK_BG: Record<number, string> = {
   0: '#7a3820', 1: '#4e2c14', 2: '#9e6030', 3: '#c4963e',
@@ -263,10 +278,16 @@ function onPageClick(e: MouseEvent): void {
               :ref="(el: any) => { if (el) bookEls[story.slug] = el as HTMLElement }"
               :href="`/story/${story.slug}`"
               class="book"
-              :class="[`book--hue${(si * 3 + bi) % 8}`, { 'is-pulled': tappedBook === story.slug }]"
+              :class="[`book--hue${(si * 3 + bi) % 8}`, {
+                'is-pulled':  tappedBook === story.slug,
+                'is-hovered': hoveredBook === story.slug,
+                'is-dimmed':  hoveredBook !== null && hoveredBook !== story.slug,
+              }]"
               role="listitem"
               :aria-label="story.title"
               @click.prevent="onBookClick(story.slug, (si * 3 + bi) % 8)"
+              @mouseenter="onBookHoverEnter(story.slug)"
+              @mouseleave="onBookHoverLeave()"
             >
               <span class="book__spine-edge" aria-hidden="true"></span>
               <span class="book__pages-edge" aria-hidden="true"></span>
@@ -480,18 +501,16 @@ function onPageClick(e: MouseEvent): void {
     opacity 0.30s ease;
   flex-shrink: 0;
 
-  // Desktop: pull out on hover — tips to landscape orientation, 2× size
-  @media (hover: hover) {
-    &:hover {
-      transform: translateZ(40px) rotateZ(90deg) scale(1.15);
-      z-index: 10;
-      filter: brightness(1.06) drop-shadow(0px 30px 36px rgba(0, 0, 0, 0.88));
-    }
+  // Desktop: pull out on hover — JS-driven class prevents flicker from transform
+  &.is-hovered {
+    transform: translateZ(40px) rotateZ(90deg) scale(1.15);
+    z-index: 10;
+    filter: brightness(1.06) drop-shadow(0px 30px 36px rgba(0, 0, 0, 0.88));
   }
 
   // Mobile: pull out on first tap (class driven)
   &.is-pulled {
-    transform: translateZ(40px) rotateZ(90deg) scale(2);
+    transform: translateZ(40px) rotateZ(90deg) scale(1.15);
     z-index: 10;
     filter: brightness(1.06) drop-shadow(0px 30px 36px rgba(0, 0, 0, 0.88));
   }
@@ -503,11 +522,9 @@ function onPageClick(e: MouseEvent): void {
 }
 
 // Dim sibling books when one is active
-@media (hover: hover) {
-  .shelf__bay:hover .book:not(:hover) {
-    opacity: 0.50;
-    filter: brightness(0.70);
-  }
+.book.is-dimmed {
+  opacity: 0.50;
+  filter: brightness(0.70);
 }
 
 .shelf__bay:has(.is-pulled) .book:not(.is-pulled) {
@@ -684,13 +701,13 @@ function onPageClick(e: MouseEvent): void {
   .book {
     transition: none;
 
-    &:hover, &.is-pulled {
+    &:hover, &.is-pulled, &.is-hovered {
       transform: none;
       filter: none;
     }
   }
 
-  .shelf__bay:hover .book:not(:hover),
+  .book.is-dimmed,
   .shelf__bay:has(.is-pulled) .book:not(.is-pulled) {
     opacity: 1;
     filter: none;

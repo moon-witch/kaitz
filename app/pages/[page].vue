@@ -1,144 +1,119 @@
 <script setup lang="ts">
-import { useDiaryEntry } from "~/composables/useDiaryEntry";
+import { usePage } from "~/composables/usePage";
 import { animate } from "animejs/animation";
 
 const route = useRoute();
-const slug = route.params.slug as string;
+const key = route.params.page as string;
 
-const { data: entry, pending, error } = await useDiaryEntry(slug);
+const { data: page, pending, error } = await usePage(key);
 
 useSeoMeta({
   title: computed(() =>
-    entry.value ? `${entry.value.title} — Tagebuch` : "Tagebuch — Library of Kaitz"
+    page.value ? `${page.value.title} — Library of Kaitz` : "Library of Kaitz"
   ),
 });
 
-function formatDate(d?: string | null) {
-  if (!d) return "";
-  return new Date(d).toLocaleDateString("de-DE", {
-    day: "numeric", month: "long", year: "numeric",
-  });
-}
-
-// ── Animation refs ──────────────────────────────────────────────────────────
-const parchmentEl  = ref<HTMLElement | null>(null);
-const eyebrowEl    = ref<HTMLElement | null>(null);
-const titleEl      = ref<HTMLElement | null>(null);
-const dividerEl    = ref<HTMLElement | null>(null);
-const bodyEl       = ref<HTMLElement | null>(null);
-const footEl       = ref<HTMLElement | null>(null);
+// ── Animation refs ───────────────────────────────────────────────────────────
+const scrollEl   = ref<HTMLElement | null>(null);
+const titleEl    = ref<HTMLElement | null>(null);
+const dividerEl  = ref<HTMLElement | null>(null);
+const bodyEl     = ref<HTMLElement | null>(null);
+const footEl     = ref<HTMLElement | null>(null);
 
 onMounted(() => {
-  if (!parchmentEl.value) return;
+  if (!scrollEl.value) return;
 
-  // 1. Parchment page rises from the dark
-  animate(parchmentEl.value, {
+  animate(scrollEl.value, {
     opacity:    [0, 1],
-    translateY: [52, 0],
+    translateY: [48, 0],
     scale:      [0.97, 1],
     duration: 780,
     ease: "outCubic",
   });
 
-  // 2. Eyebrow caption
-  if (eyebrowEl.value) {
-    animate(eyebrowEl.value, {
-      opacity:    [0, 1],
-      translateY: [6, 0],
-      duration: 440,
-      ease: "outQuad",
-      delay: 360,
-    });
-  }
-
-  // 3. Title slides in
   if (titleEl.value) {
     animate(titleEl.value, {
       opacity:    [0, 1],
       translateY: [12, 0],
-      duration: 540,
+      duration: 520,
       ease: "outCubic",
       delay: 480,
     });
   }
 
-  // 4. Divider draws across
   if (dividerEl.value) {
     animate(dividerEl.value, {
-      scaleX:   [0, 1],
-      opacity:  [0, 1],
-      duration: 680,
+      scaleX:  [0, 1],
+      opacity: [0, 1],
+      duration: 660,
       ease: "outCubic",
-      delay: 680,
+      delay: 660,
     });
   }
 
-  // 6. Body text drifts in
   if (bodyEl.value) {
     animate(bodyEl.value, {
       opacity:    [0, 1],
       translateY: [10, 0],
-      duration: 640,
+      duration: 620,
       ease: "outCubic",
-      delay: 860,
+      delay: 840,
     });
   }
 
-  // 7. Footer fades in last
   if (footEl.value) {
     animate(footEl.value, {
       opacity:    [0, 1],
       translateY: [6, 0],
-      duration: 440,
+      duration: 420,
       ease: "outQuad",
-      delay: 1060,
+      delay: 1040,
     });
   }
 });
 </script>
 
 <template>
-  <section class="entry-page">
+  <section class="static-page">
     <HallScene>
 
       <!-- ── Loading ──────────────────────────────────────────────────────── -->
-      <div v-if="pending" class="entry-status">
-        <span class="entry-status__text">Lade Eintrag…</span>
+      <div v-if="pending" class="static-status">
+        <span class="static-status__text">Seite wird geladen…</span>
       </div>
 
       <!-- ── Error / Not found ────────────────────────────────────────────── -->
-      <div v-else-if="error || !entry" class="entry-status">
-        <span class="entry-status__text">Dieser Eintrag konnte nicht gefunden werden.</span>
-        <NuxtLink to="/diary" class="entry-status__back">← Zurück zum Tagebuch</NuxtLink>
+      <div v-else-if="error || !page" class="static-status">
+        <span class="static-status__text">Diese Seite konnte nicht gefunden werden.</span>
+        <NuxtLink to="/" class="static-status__back">← Zurück zur Bibliothek</NuxtLink>
       </div>
 
-      <!-- ── Entry parchment ──────────────────────────────────────────────── -->
-      <div v-else class="entry-wrap">
+      <!-- ── Page scroll ──────────────────────────────────────────────────── -->
+      <div v-else class="static-wrap">
 
-        <!-- Back navigation (outside parchment, above) -->
-        <nav class="entry-nav">
-          <NuxtLink to="/diary" class="entry-nav__back">
-            <span class="entry-nav__arrow" aria-hidden="true">←</span>
-            Tagebuch
+        <!-- Back navigation -->
+        <nav class="static-nav">
+          <NuxtLink to="/" class="static-nav__back">
+            <span class="static-nav__arrow" aria-hidden="true">←</span>
+            Zur Bibliothek
           </NuxtLink>
         </nav>
 
-        <!-- The parchment itself -->
-        <article ref="parchmentEl" class="entry-scroll" style="opacity:0">
+        <!-- Parchment scroll -->
+        <article ref="scrollEl" class="scroll" style="opacity:0">
 
           <!-- Header -->
-          <header class="entry-scroll__hd">
-            <p v-if="entry.date_created" ref="eyebrowEl" class="entry-scroll__eyebrow" style="opacity:0">
-              <time>{{ formatDate(entry.date_created) }}</time>
-            </p>
-            <h1 ref="titleEl" class="entry-scroll__title" style="opacity:0">
-              {{ entry.title }}
+          <header class="scroll__hd">
+            <h1 ref="titleEl" class="scroll__title" style="opacity:0">
+              {{ page.title }}
             </h1>
           </header>
-/
+
           <!-- Ornamental divider -->
-          <div ref="dividerEl" class="entry-scroll__rule" style="opacity:0" aria-hidden="true">
+          <div ref="dividerEl" class="scroll__rule" style="opacity:0" aria-hidden="true">
             <span class="rule__line rule__line--l"></span>
+            <span class="rule__gem"></span>
+            <span class="rule__ornament">✦</span>
             <span class="rule__gem"></span>
             <span class="rule__line rule__line--r"></span>
           </div>
@@ -146,17 +121,17 @@ onMounted(() => {
           <!-- Body prose -->
           <div
             ref="bodyEl"
-            class="entry-scroll__body prose"
+            class="scroll__body prose"
             style="opacity:0"
-            v-html="entry.content"
+            v-html="page.content"
           />
 
           <!-- Footer -->
-          <footer ref="footEl" class="entry-scroll__foot" style="opacity:0">
+          <footer ref="footEl" class="scroll__foot" style="opacity:0">
             <div class="foot-rule" aria-hidden="true"></div>
             <div class="foot-inner">
-              <NuxtLink to="/diary" class="foot-link">
-                <span class="foot-link__arrow">←</span> Alle Einträge
+              <NuxtLink to="/" class="foot-link">
+                <span class="foot-link__arrow">←</span> Zur Bibliothek
               </NuxtLink>
             </div>
           </footer>
@@ -170,16 +145,15 @@ onMounted(() => {
 
 <style scoped lang="scss">
 @use 'sass:color';
+@use '@/assets/styles/variables' as *;
 
 // ── Page shell ────────────────────────────────────────────────────────────────
 
-.entry-page {
-  min-height: 100vh;
-}
+.static-page { min-height: 100vh; }
 
-// ── Status (loading / error) ──────────────────────────────────────────────────
+// ── Status ────────────────────────────────────────────────────────────────────
 
-.entry-status {
+.static-status {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -188,18 +162,18 @@ onMounted(() => {
   gap: 1.5rem;
 }
 
-.entry-status__text {
+.static-status__text {
   font-family: $font-serif;
   font-style: italic;
   font-size: 1.05rem;
-  color: rgba($moon-100, 0.45);
+  color: rgba($moon-100, 0.65);
 }
 
-.entry-status__back {
+.static-status__back {
   font-family: $font-serif;
   font-style: italic;
   font-size: 0.9rem;
-  color: rgba($moon-100, 0.55);
+  color: rgba($moon-100, 0.68);
   text-decoration: none;
   letter-spacing: 0.06em;
   transition: color $transition;
@@ -209,33 +183,29 @@ onMounted(() => {
 
 // ── Outer wrapper ─────────────────────────────────────────────────────────────
 
-.entry-wrap {
+.static-wrap {
   width: 320px;
   margin: 0 auto;
-  padding: 6rem 2rem 6rem;
-
-  @media (max-width: $bp-tablet) {
-    padding: 5rem 1rem 5rem;
-  }
+  padding: 6rem 1rem 6rem;
 
   @media (min-width: $bp-tablet) {
-    width: 600px;
-    padding: 6rem 2.4rem 6rem;
+    width: 580px;
+    padding: 6rem 2rem 6rem;
   }
 
   @media (min-width: $bp-desktop) {
-    width: 1000px;
-    padding: 6rem 3.2rem 6rem;
+    width: 860px;
+    padding: 6rem 3rem 6rem;
   }
 }
 
 // ── Back navigation ───────────────────────────────────────────────────────────
 
-.entry-nav {
-  margin-bottom: 1.6rem;
+.static-nav {
+  margin-bottom: 1.4rem;
 }
 
-.entry-nav__back {
+.static-nav__back {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -243,117 +213,95 @@ onMounted(() => {
   font-style: italic;
   font-size: 0.84rem;
   letter-spacing: 0.10em;
-  color: rgba($moon-100, 0.38);
+  color: rgba($moon-100, 0.62);
   text-decoration: none;
   transition: color 0.28s ease;
 
-  &:hover {
-    color: rgba($moon-100, 0.72);
-  }
+  &:hover { color: rgba($moon-100, 0.88); }
 }
 
-.entry-nav__arrow {
+.static-nav__arrow {
   font-style: normal;
   transition: transform 0.22s ease;
 
-  .entry-nav__back:hover & {
+  .static-nav__back:hover & {
     transform: translateX(-3px);
   }
 }
 
-// ── The parchment scroll ──────────────────────────────────────────────────────
+// ── Parchment scroll ──────────────────────────────────────────────────────────
 
-.entry-scroll {
+.scroll {
   position: relative;
   box-sizing: border-box;
   will-change: transform, opacity;
+  padding: 3.6rem 3.2rem 3rem;
 
   background: linear-gradient(
-    165deg,
-    #dbbe8a 0%,
-    #cead72 22%,
-    #c09a5c 52%,
-    #b48445 78%,
-    #a87640 100%
+    162deg,
+    #dfc08a 0%,
+    #ceac70 22%,
+    #c09a5a 52%,
+    #b28444 78%,
+    #a6783e 100%
   );
 
-  border: 1px solid rgba(90, 52, 10, 0.40);
-  border-radius: 6px 3px 7px 4px / 4px 7px 3px 6px;
-
-  padding: 3rem 2.8rem 2.4rem;
+  border: 1px solid rgba(86, 48, 8, 0.42);
+  border-radius: 5px 2px 6px 3px / 3px 6px 2px 5px;
 
   box-shadow:
-    0 22px 60px rgba(0, 0, 0, 0.68),
-    0 6px 18px  rgba(0, 0, 0, 0.38),
-    inset 0 2px 0 rgba(255, 245, 210, 0.32),
-    inset 0 -1px 0 rgba(60, 30, 8, 0.20),
-    inset 2px 0 0 rgba(255, 245, 210, 0.12),
-    inset -2px 0 0 rgba(60, 30, 8, 0.10);
+    0 24px 64px rgba(0, 0, 0, 0.70),
+    0 6px 20px  rgba(0, 0, 0, 0.40),
+    inset 0 2px 0 rgba(255, 248, 215, 0.30),
+    inset 0 -1px 0 rgba(56, 28, 6, 0.20),
+    inset 2px 0 0 rgba(255, 248, 215, 0.10),
+    inset -2px 0 0 rgba(56, 28, 6, 0.08);
 
-  // Paper grain lines
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-    border-radius: inherit;
-    background: repeating-linear-gradient(
-      180deg,
-      transparent 0px,
-      transparent 3px,
-      rgba(130, 80, 22, 0.045) 3px,
-      rgba(130, 80, 22, 0.045) 4px
-    );
-  }
-
-  // Wax-seal-like shimmer
+  // Top and bottom scroll rolls
+  &::before,
   &::after {
     content: '';
     position: absolute;
-    inset: 0;
+    left: -6px;
+    right: -6px;
+    height: 18px;
     pointer-events: none;
-    z-index: 1;
-    border-radius: inherit;
+    z-index: 2;
+    border-radius: 3px;
     background: linear-gradient(
-      118deg,
-      transparent 18%,
-      rgba(255, 240, 170, 0.00) 34%,
-      rgba(255, 240, 170, 0.10) 50%,
-      rgba(255, 240, 170, 0.00) 66%,
-      transparent 82%
+      to bottom,
+      rgba(255, 248, 215, 0.22),
+      rgba(140, 88, 28, 0.60) 30%,
+      rgba(100, 58, 12, 0.72) 70%,
+      rgba(56, 28, 6, 0.40)
     );
+    box-shadow:
+      0 3px 10px rgba(0, 0, 0, 0.38),
+      inset 0 1px 0 rgba(255, 240, 180, 0.18);
   }
 
+  &::before { top: -9px; }
+  &::after  { bottom: -9px; transform: scaleY(-1); }
+
   @media (max-width: $bp-tablet) {
-    padding: 2.4rem 1.6rem 2rem;
+    padding: 2.8rem 1.8rem 2.4rem;
   }
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
 
-.entry-scroll__hd {
+.scroll__hd {
   position: relative;
   z-index: 2;
-  margin-bottom: 0;
   text-align: center;
+  margin-bottom: 0;
 }
 
-.entry-scroll__eyebrow {
-  font-family: $font-serif;
-  font-style: italic;
-  font-size: 0.82rem;
-  color: rgba(55, 28, 8, 0.62);
-  letter-spacing: 0.12em;
-  margin: 0 0 0.65rem;
-  will-change: transform, opacity;
-}
-
-.entry-scroll__title {
+.scroll__title {
   font-family: $font-serif;
   font-weight: 700;
   color: $ink-text;
-  font-size: clamp(1.55rem, 5vw, 2.2rem);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
   letter-spacing: 0.06em;
   line-height: 1.2;
   margin: 0;
@@ -362,13 +310,13 @@ onMounted(() => {
 
 // ── Ornamental divider ────────────────────────────────────────────────────────
 
-.entry-scroll__rule {
+.scroll__rule {
   position: relative;
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  margin: 1.5rem 0 1.6rem;
+  gap: 0.55rem;
+  margin: 1.6rem 0 1.8rem;
   transform-origin: left center;
   will-change: transform, opacity;
 }
@@ -376,43 +324,35 @@ onMounted(() => {
 .rule__line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    to right,
-    transparent,
-    rgba(90, 52, 10, 0.45) 30%,
-    rgba(90, 52, 10, 0.45) 70%,
-    transparent
-  );
 
   &--l {
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(90, 52, 10, 0.45)
-    );
+    background: linear-gradient(to right, transparent, rgba(86, 48, 8, 0.44));
   }
 
   &--r {
-    background: linear-gradient(
-      to left,
-      transparent,
-      rgba(90, 52, 10, 0.45)
-    );
+    background: linear-gradient(to left, transparent, rgba(86, 48, 8, 0.44));
   }
 }
 
 .rule__gem {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 999px;
-  background: rgba(90, 52, 10, 0.55);
-  box-shadow: 0 0 6px rgba(90, 52, 10, 0.30);
   flex-shrink: 0;
+  background: rgba(86, 48, 8, 0.52);
+  box-shadow: 0 0 6px rgba(86, 48, 8, 0.28);
+}
+
+.rule__ornament {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  color: rgba(86, 48, 8, 0.55);
+  line-height: 1;
 }
 
 // ── Body prose ────────────────────────────────────────────────────────────────
 
-.entry-scroll__body {
+.scroll__body {
   position: relative;
   z-index: 2;
   font-family: $font-serif;
@@ -446,7 +386,7 @@ onMounted(() => {
     :deep(blockquote) {
       margin: 1.4em 0;
       padding: 0.6em 1.1em;
-      border-left: 2px solid rgba(90, 52, 10, 0.35);
+      border-left: 2px solid rgba(86, 48, 8, 0.34);
       font-style: italic;
       color: rgba(28, 8, 50, 0.72);
     }
@@ -459,25 +399,30 @@ onMounted(() => {
     :deep(li) { margin-bottom: 0.35em; }
 
     :deep(a) {
-      color: rgba(90, 30, 10, 0.82);
+      color: rgba(86, 28, 8, 0.82);
       text-decoration: underline;
       text-underline-offset: 2px;
       transition: color $transition;
 
-      &:hover { color: rgba(90, 30, 10, 1); }
+      &:hover { color: rgba(86, 28, 8, 1); }
     }
 
     :deep(hr) {
       border: none;
-      border-top: 1px solid rgba(90, 52, 10, 0.25);
+      border-top: 1px solid rgba(86, 48, 8, 0.24);
       margin: 1.8em 0;
+    }
+
+    :deep(img) {
+      max-width: 100%;
+      height: auto;
     }
   }
 }
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 
-.entry-scroll__foot {
+.scroll__foot {
   position: relative;
   z-index: 2;
   margin-top: 2.4rem;
@@ -489,8 +434,8 @@ onMounted(() => {
   background: linear-gradient(
     to right,
     transparent,
-    rgba(90, 52, 10, 0.32) 20%,
-    rgba(90, 52, 10, 0.32) 80%,
+    rgba(86, 48, 8, 0.30) 20%,
+    rgba(86, 48, 8, 0.30) 80%,
     transparent
   );
   margin-bottom: 1.1rem;
@@ -499,9 +444,7 @@ onMounted(() => {
 .foot-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  justify-content: flex-start;
 }
 
 .foot-link {
@@ -509,16 +452,14 @@ onMounted(() => {
   font-style: italic;
   font-size: 0.83rem;
   letter-spacing: 0.10em;
-  color: rgba(55, 28, 8, 0.55);
+  color: rgba(52, 26, 6, 0.70);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   transition: color 0.26s ease;
 
-  &:hover {
-    color: rgba(55, 28, 8, 0.9);
-  }
+  &:hover { color: rgba(52, 26, 6, 0.92); }
 }
 
 .foot-link__arrow {
@@ -530,33 +471,17 @@ onMounted(() => {
   }
 }
 
-
 // ── Reduced motion ────────────────────────────────────────────────────────────
 
 @media (prefers-reduced-motion: reduce) {
-  .entry-scroll,
-  .entry-scroll__seal,
-  .entry-scroll__eyebrow,
-  .entry-scroll__title,
-  .entry-scroll__rule,
-  .entry-scroll__body,
-  .entry-scroll__foot {
+  .scroll,
+  .scroll__title,
+  .scroll__rule,
+  .scroll__body,
+  .scroll__foot {
     opacity: 1 !important;
     transform: none !important;
     transition: none;
-  }
-}
-
-:deep(img) {
-  max-width: 250px;
-  height: auto;
-
-  @media (min-width: $bp-tablet) {
-    max-width: 500px;
-  }
-
-  @media (min-width: $bp-desktop) {
-    max-width: 900px;
   }
 }
 </style>

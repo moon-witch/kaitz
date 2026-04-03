@@ -188,6 +188,7 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use 'sass:color';
 @use '@/assets/styles/variables' as *;
 
 // ── Page shell ────────────────────────────────────────────────────────────────
@@ -500,7 +501,7 @@ onMounted(() => {
     :deep(h2), :deep(h3) {
       font-family: $font-serif;
       font-weight: 700;
-      color: darken($ink-text, 5%);
+      color: color.adjust($ink-text, $lightness: -5%);
       letter-spacing: 0.05em;
       margin: 1.6em 0 0.5em;
       line-height: 1.25;

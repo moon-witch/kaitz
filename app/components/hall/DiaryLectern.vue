@@ -187,6 +187,9 @@ const latest = computed(() => (props.entries ?? [])[0] ?? null);
   margin-top: $sp-md;
   position: relative;
   max-height: 10rem;
+
+  @media (min-width: 900px) { max-height: 5.5rem; }
+
   overflow: hidden;
   -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 55%, transparent 100%);

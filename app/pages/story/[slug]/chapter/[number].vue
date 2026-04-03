@@ -36,6 +36,16 @@ const nextChapter = computed(() =>
   chapters.value?.find(c => c.chapter_number === chapterNum + 1) ?? null
 );
 
+// ── Chapter TOC ──────────────────────────────────────────────────────────────
+const tocOpen = ref(true);
+const readingMode = ref(false);
+
+const sortedChapters = computed(() =>
+  chapters.value
+    ? [...chapters.value].sort((a, b) => a.chapter_number - b.chapter_number)
+    : []
+);
+
 // ── Animation refs ───────────────────────────────────────────────────────────
 const scrollEl  = ref<HTMLElement | null>(null);
 const numeralEl = ref<HTMLElement | null>(null);
@@ -45,6 +55,18 @@ const bodyEl    = ref<HTMLElement | null>(null);
 const footEl    = ref<HTMLElement | null>(null);
 
 onMounted(() => {
+  // Collapse TOC by default on mobile
+  if (window.innerWidth < 900) {
+    tocOpen.value = false;
+  }
+
+  // Escape exits reading mode
+  const handleKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') readingMode.value = false;
+  };
+  window.addEventListener('keydown', handleKey);
+  onUnmounted(() => window.removeEventListener('keydown', handleKey));
+
   if (!scrollEl.value) return;
 
   animate(scrollEl.value, {
@@ -90,7 +112,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="chapter-page">
+  <section class="chapter-page" :class="{ 'chapter-page--reading': readingMode }">
+    <div class="reading-veil" aria-hidden="true"></div>
     <HallScene>
 
       <!-- ── Loading ──────────────────────────────────────────────────────── -->
@@ -106,82 +129,190 @@ onMounted(() => {
         </NuxtLink>
       </div>
 
-      <!-- ── Chapter scroll ───────────────────────────────────────────────── -->
-      <div v-else class="chapter-wrap">
+      <!-- ── Chapter view ────────────────────────────────────────────────── -->
+      <div v-else class="chapter-outer" :class="{ 'chapter-outer--toc': tocOpen }">
 
-        <!-- Back nav -->
-        <nav class="chapter-nav">
-          <NuxtLink :to="`/story/${storySlug}`" class="chapter-nav__back">
-            <span class="chapter-nav__arrow" aria-hidden="true">←</span>
-            {{ story?.title ?? "Werk" }}
-          </NuxtLink>
-        </nav>
+        <!-- ── Left: main reading column ─────────────────────────────────── -->
+        <div class="chapter-main">
 
-        <!-- Parchment scroll -->
-        <article ref="scrollEl" class="chapter-scroll" style="opacity:0">
+          <!-- Topbar: back nav + TOC toggle -->
+          <div class="chapter-topbar">
+            <nav class="chapter-nav">
+              <NuxtLink :to="`/story/${storySlug}`" class="chapter-nav__back">
+                <span class="chapter-nav__arrow" aria-hidden="true">←</span>
+                {{ story?.title ?? "Werk" }}
+              </NuxtLink>
+            </nav>
 
-          <!-- Header -->
-          <header class="chapter-scroll__hd">
-            <p ref="numeralEl" class="chapter-scroll__numeral" style="opacity:0" aria-label="`Kapitel ${chapterNum}`">
-              Kapitel {{ toRoman(chapterNum) }}
-            </p>
-            <h1 ref="titleEl" class="chapter-scroll__title" style="opacity:0">
-              {{ chapter.title }}
-            </h1>
-          </header>
+            <button
+              class="read-toggle"
+              :class="{ 'read-toggle--active': readingMode }"
+              :aria-pressed="readingMode"
+              :aria-label="readingMode ? 'Lesemodus beenden' : 'Lesemodus aktivieren'"
+              @click="readingMode = !readingMode"
+            >
+              <span class="read-toggle__icon" aria-hidden="true">◎</span>
+            </button>
 
-          <!-- Ornamental divider -->
-          <div ref="dividerEl" class="chapter-scroll__rule" style="opacity:0" aria-hidden="true">
-            <span class="rule__line rule__line--l"></span>
-            <span class="rule__gem"></span>
-            <span class="rule__line rule__line--r"></span>
+            <button
+              v-if="sortedChapters.length"
+              class="toc-toggle"
+              :class="{ 'toc-toggle--active': tocOpen }"
+              :aria-expanded="tocOpen"
+              aria-controls="chapter-toc"
+              @click="tocOpen = !tocOpen"
+            >
+              <span class="toc-toggle__lines" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+              <span class="toc-toggle__label">Alle Kapitel</span>
+            </button>
           </div>
 
-          <!-- Body prose with drop cap -->
+          <!-- Mobile TOC (above scroll) -->
           <div
-            ref="bodyEl"
-            class="chapter-scroll__body prose"
-            style="opacity:0"
-            v-html="chapter.content"
-          />
-
-          <!-- Footer navigation -->
-          <footer ref="footEl" class="chapter-scroll__foot" style="opacity:0">
-            <div class="foot-rule" aria-hidden="true"></div>
-            <div class="foot-inner">
-              <!-- Prev chapter -->
-              <NuxtLink
-                v-if="prevChapter"
-                :to="`/story/${storySlug}/chapter/${prevChapter.chapter_number}`"
-                class="foot-link foot-link--prev"
-              >
-                <span class="foot-link__arrow">←</span>
-                <span class="foot-link__label">
-                  <span class="foot-link__meta">Vorheriges Kapitel</span>
-                  <span class="foot-link__title">{{ prevChapter.title }}</span>
-                </span>
-              </NuxtLink>
-              <NuxtLink v-else :to="`/story/${storySlug}`" class="foot-back">
-                ← Zum Werk
-              </NuxtLink>
-
-              <!-- Next chapter -->
-              <NuxtLink
-                v-if="nextChapter"
-                :to="`/story/${storySlug}/chapter/${nextChapter.chapter_number}`"
-                class="foot-link foot-link--next"
-              >
-                <span class="foot-link__label">
-                  <span class="foot-link__meta">Nächstes Kapitel</span>
-                  <span class="foot-link__title">{{ nextChapter.title }}</span>
-                </span>
-                <span class="foot-link__arrow">→</span>
-              </NuxtLink>
-              <span v-else class="foot-spacer"></span>
+            v-if="sortedChapters.length"
+            id="chapter-toc"
+            class="chapter-toc chapter-toc--mobile"
+            :class="{ 'chapter-toc--open': tocOpen }"
+            aria-hidden="!tocOpen"
+          >
+            <div class="toc-panel toc-panel--mobile">
+              <ol class="toc-list">
+                <li
+                  v-for="ch in sortedChapters"
+                  :key="ch.chapter_number"
+                  class="toc-list__item"
+                  :class="{ 'toc-list__item--active': ch.chapter_number === chapterNum }"
+                >
+                  <NuxtLink
+                    :to="`/story/${storySlug}/chapter/${ch.chapter_number}`"
+                    class="toc-link"
+                    :aria-current="ch.chapter_number === chapterNum ? 'page' : undefined"
+                    @click="tocOpen = false"
+                  >
+                    <span class="toc-link__num">{{ toRoman(ch.chapter_number) }}</span>
+                    <span class="toc-link__title">{{ ch.title }}</span>
+                    <span v-if="ch.chapter_number === chapterNum" class="toc-link__marker" aria-hidden="true">◆</span>
+                  </NuxtLink>
+                </li>
+              </ol>
             </div>
-          </footer>
+          </div>
 
-        </article>
+          <!-- Parchment scroll -->
+          <article ref="scrollEl" class="chapter-scroll" style="opacity:0">
+
+            <!-- Header -->
+            <header class="chapter-scroll__hd">
+              <p ref="numeralEl" class="chapter-scroll__numeral" style="opacity:0" :aria-label="`Kapitel ${chapterNum}`">
+                Kapitel {{ toRoman(chapterNum) }}
+              </p>
+              <h1 ref="titleEl" class="chapter-scroll__title" style="opacity:0">
+                {{ chapter.title }}
+              </h1>
+            </header>
+
+            <!-- Ornamental divider -->
+            <div ref="dividerEl" class="chapter-scroll__rule" style="opacity:0" aria-hidden="true">
+              <span class="rule__line rule__line--l"></span>
+              <span class="rule__gem"></span>
+              <span class="rule__line rule__line--r"></span>
+            </div>
+
+            <!-- Body prose with drop cap -->
+            <div
+              ref="bodyEl"
+              class="chapter-scroll__body prose"
+              style="opacity:0"
+              v-html="chapter.content"
+            />
+
+            <!-- Footer navigation -->
+            <footer ref="footEl" class="chapter-scroll__foot" style="opacity:0">
+              <div class="foot-rule" aria-hidden="true"></div>
+              <div class="foot-inner">
+                <!-- Prev chapter -->
+                <NuxtLink
+                  v-if="prevChapter"
+                  :to="`/story/${storySlug}/chapter/${prevChapter.chapter_number}`"
+                  class="foot-link foot-link--prev"
+                >
+                  <span class="foot-link__arrow">←</span>
+                  <span class="foot-link__label">
+                    <span class="foot-link__meta">Vorheriges Kapitel</span>
+                    <span class="foot-link__title">{{ prevChapter.title }}</span>
+                  </span>
+                </NuxtLink>
+                <NuxtLink v-else :to="`/story/${storySlug}`" class="foot-back">
+                  ← Zum Werk
+                </NuxtLink>
+
+                <!-- Next chapter -->
+                <NuxtLink
+                  v-if="nextChapter"
+                  :to="`/story/${storySlug}/chapter/${nextChapter.chapter_number}`"
+                  class="foot-link foot-link--next"
+                >
+                  <span class="foot-link__label">
+                    <span class="foot-link__meta">Nächstes Kapitel</span>
+                    <span class="foot-link__title">{{ nextChapter.title }}</span>
+                  </span>
+                  <span class="foot-link__arrow">→</span>
+                </NuxtLink>
+                <span v-else class="foot-spacer"></span>
+              </div>
+            </footer>
+
+          </article>
+        </div>
+
+        <!-- ── Right: sticky TOC sidebar (desktop) ───────────────────────── -->
+        <aside
+          v-if="sortedChapters.length"
+          class="chapter-toc chapter-toc--desktop"
+          :class="{ 'chapter-toc--open': tocOpen }"
+          aria-label="Kapitelübersicht"
+        >
+          <div class="toc-panel toc-panel--desktop">
+
+            <!-- Panel header -->
+            <header class="toc-panel__hd">
+              <span class="toc-panel__rune" aria-hidden="true">✦</span>
+              <h2 class="toc-panel__title">{{ story?.title ?? "Kapitel" }}</h2>
+              <p class="toc-panel__count">{{ sortedChapters.length }} Kapitel</p>
+            </header>
+
+            <!-- Divider -->
+            <div class="toc-panel__rule" aria-hidden="true">
+              <span class="toc-rule__line toc-rule__line--l"></span>
+              <span class="toc-rule__gem"></span>
+              <span class="toc-rule__line toc-rule__line--r"></span>
+            </div>
+
+            <!-- Chapter list -->
+            <ol class="toc-list">
+              <li
+                v-for="ch in sortedChapters"
+                :key="ch.chapter_number"
+                class="toc-list__item"
+                :class="{ 'toc-list__item--active': ch.chapter_number === chapterNum }"
+              >
+                <NuxtLink
+                  :to="`/story/${storySlug}/chapter/${ch.chapter_number}`"
+                  class="toc-link"
+                  :aria-current="ch.chapter_number === chapterNum ? 'page' : undefined"
+                >
+                  <span class="toc-link__num">{{ toRoman(ch.chapter_number) }}</span>
+                  <span class="toc-link__title">{{ ch.title }}</span>
+                  <span v-if="ch.chapter_number === chapterNum" class="toc-link__marker" aria-hidden="true">◆</span>
+                </NuxtLink>
+              </li>
+            </ol>
+
+          </div>
+        </aside>
+
       </div>
 
     </HallScene>
@@ -189,11 +320,50 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+@use 'sass:color';
 @use '@/assets/styles/variables' as *;
 
 // ── Page shell ────────────────────────────────────────────────────────────────
 
 .chapter-page { min-height: 100vh; }
+
+// ── Reading veil ──────────────────────────────────────────────────────────────
+
+.reading-veil {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  pointer-events: none;
+  z-index: 1;
+  transition: background 0.45s ease;
+
+  .chapter-page--reading & {
+    background: rgba(0, 0, 0, 0.60);
+  }
+}
+
+// ── Reading mode overrides ────────────────────────────────────────────────────
+
+.chapter-page--reading {
+  .chapter-topbar {
+    opacity: 0.12;
+    transition: opacity 0.35s ease;
+    pointer-events: none;
+
+    &:hover,
+    &:focus-within {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .chapter-toc--desktop.chapter-toc--open {
+    opacity: 0.18;
+    transition: opacity 0.35s ease, width 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover { opacity: 1; }
+  }
+}
 
 // ── Status ────────────────────────────────────────────────────────────────────
 
@@ -224,20 +394,46 @@ onMounted(() => {
   &:hover { color: rgba($accent-500, 0.9); }
 }
 
-// ── Outer wrapper ─────────────────────────────────────────────────────────────
+// ── Outer layout ──────────────────────────────────────────────────────────────
 
-.chapter-wrap {
+.chapter-outer {
   width: 320px;
   margin: 0 auto;
   padding: 6rem 1rem 6rem;
 
-  @media (min-width: $bp-tablet)  { width: 600px; padding: 6rem 2.4rem 6rem; }
-  @media (min-width: $bp-desktop) { width: 840px; padding: 6rem 3.2rem 6rem; }
+  @media (min-width: $bp-tablet) {
+    width: 600px;
+    padding: 6rem 2.4rem 6rem;
+  }
+
+  @media (min-width: $bp-desktop) {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    width: min(calc(100vw - 6.4rem), 1140px);
+    padding: 6rem 3.2rem 6rem;
+  }
+}
+
+// ── Main reading column ───────────────────────────────────────────────────────
+
+.chapter-main {
+  flex: 1;
+  min-width: 0;
+}
+
+// ── Topbar: back nav + TOC toggle ─────────────────────────────────────────────
+
+.chapter-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.6rem;
 }
 
 // ── Back nav ──────────────────────────────────────────────────────────────────
 
-.chapter-nav { margin-bottom: 1.6rem; }
+.chapter-nav { flex: 1; }
 
 .chapter-nav__back {
   display: inline-flex;
@@ -257,6 +453,319 @@ onMounted(() => {
   font-style: normal;
   transition: transform 0.22s ease;
   .chapter-nav__back:hover & { transform: translateX(-3px); }
+}
+
+// ── Reading mode toggle ───────────────────────────────────────────────────────
+
+.read-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 0.4rem;
+  background: rgba($ink-800, 0.60);
+  border: 1px solid rgba($moon-100, 0.12);
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.24s ease, background 0.24s ease, box-shadow 0.24s ease;
+
+  &:hover {
+    background: rgba($ink-800, 0.88);
+    border-color: rgba($accent-500, 0.38);
+  }
+
+  &--active {
+    background: rgba($ink-800, 0.88);
+    border-color: rgba($accent-500, 0.55);
+    box-shadow: 0 0 10px rgba($accent-500, 0.24);
+  }
+}
+
+.read-toggle__icon {
+  font-size: 0.72rem;
+  color: rgba($moon-100, 0.48);
+  line-height: 1;
+  transition: color 0.24s ease;
+
+  .read-toggle--active & { color: rgba($accent-500, 0.90); }
+  .read-toggle:hover & { color: rgba($moon-100, 0.85); }
+}
+
+// ── TOC toggle button ─────────────────────────────────────────────────────────
+
+.toc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.52rem;
+  background: rgba($ink-800, 0.72);
+  border: 1px solid rgba($accent-500, 0.22);
+  border-radius: 4px 2px 5px 2px / 2px 5px 2px 4px;
+  padding: 0.38rem 0.7rem 0.38rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 0.24s ease, background 0.24s ease;
+
+  &:hover,
+  &--active {
+    background: rgba($ink-800, 0.92);
+    border-color: rgba($accent-500, 0.44);
+  }
+}
+
+.toc-toggle__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 14px;
+
+  span {
+    display: block;
+    height: 1.5px;
+    background: rgba($moon-100, 0.62);
+    border-radius: 1px;
+    transition: background 0.2s ease, width 0.2s ease;
+    width: 100%;
+
+    &:nth-child(2) { width: 75%; }
+
+    .toc-toggle--active & {
+      background: rgba($accent-500, 0.88);
+      &:nth-child(2) { width: 55%; }
+    }
+  }
+}
+
+.toc-toggle__label {
+  font-family: $font-serif;
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0.10em;
+  color: rgba($moon-100, 0.68);
+  white-space: nowrap;
+  transition: color 0.24s ease;
+
+  .toc-toggle--active & { color: rgba($candle-bright, 0.82); }
+  .toc-toggle:hover & { color: rgba($moon-100, 0.88); }
+}
+
+// ── Mobile TOC (above scroll, collapsible) ────────────────────────────────────
+
+.chapter-toc--mobile {
+  display: block;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              margin-bottom 0.42s ease;
+  margin-bottom: 0;
+
+  &.chapter-toc--open {
+    max-height: 70vh;
+    margin-bottom: 1.4rem;
+  }
+
+  @media (min-width: $bp-desktop) {
+    display: none;
+  }
+}
+
+// ── Desktop TOC sidebar ───────────────────────────────────────────────────────
+
+.chapter-toc--desktop {
+  display: none;
+
+  @media (min-width: $bp-desktop) {
+    display: block;
+    position: sticky;
+    top: 6rem;
+    align-self: flex-start;
+    flex-shrink: 0;
+    overflow: hidden;
+    width: 0;
+    transition: width 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.chapter-toc--open {
+      width: 240px;
+    }
+  }
+}
+
+// ── TOC panel shell ───────────────────────────────────────────────────────────
+
+.toc-panel {
+  box-sizing: border-box;
+}
+
+.toc-panel--mobile {
+  background: linear-gradient(175deg, $ink-900 0%, $ink-950 100%);
+  border: 1px solid rgba($accent-500, 0.18);
+  border-radius: 3px 5px 4px 3px / 4px 3px 5px 3px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba($accent-500, 0.10);
+  padding: 1.2rem 1.4rem 1.4rem;
+  max-height: calc(70vh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.toc-panel--desktop {
+  width: 240px;
+  background: linear-gradient(175deg, $ink-900 0%, $ink-950 100%);
+  border: 1px solid rgba($accent-500, 0.20);
+  border-radius: 3px 5px 4px 3px / 4px 3px 5px 3px;
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.60),
+    0 4px 16px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba($accent-500, 0.12),
+    inset 0 0 0 1px rgba($ink-800, 0.40);
+  padding: 1.4rem 1.2rem 1.6rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+// ── TOC panel header ──────────────────────────────────────────────────────────
+
+.toc-panel__hd {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.toc-panel__rune {
+  display: block;
+  font-size: 0.70rem;
+  color: rgba($accent-500, 0.55);
+  margin-bottom: 0.45rem;
+  letter-spacing: 0.3em;
+}
+
+.toc-panel__title {
+  font-family: $font-serif;
+  font-weight: 700;
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  letter-spacing: 0.08em;
+  color: rgba($moon-100, 0.90);
+  margin: 0 0 0.3rem;
+  line-height: 1.3;
+}
+
+.toc-panel__count {
+  font-family: $font-serif;
+  font-style: italic;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: rgba($moon-100, 0.40);
+  margin: 0;
+}
+
+// ── TOC divider ───────────────────────────────────────────────────────────────
+
+.toc-panel__rule {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0 1.1rem;
+}
+
+.toc-rule__line {
+  flex: 1;
+  height: 1px;
+
+  &--l { background: linear-gradient(to right, transparent, rgba($accent-500, 0.28)); }
+  &--r { background: linear-gradient(to left,  transparent, rgba($accent-500, 0.28)); }
+}
+
+.toc-rule__gem {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: rgba($accent-500, 0.55);
+  box-shadow: 0 0 6px rgba($accent-500, 0.35);
+}
+
+// ── Chapter list ──────────────────────────────────────────────────────────────
+
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.toc-list__item {
+  border-radius: 2px 4px 3px 2px;
+  transition: background 0.2s ease;
+
+  &--active {
+    background: rgba($accent-500, 0.10);
+  }
+
+  &:not(&--active):hover {
+    background: rgba($moon-100, 0.05);
+  }
+}
+
+// ── Chapter link ──────────────────────────────────────────────────────────────
+
+.toc-link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.48rem 0.7rem;
+  text-decoration: none;
+  position: relative;
+
+  // Left accent bar for active item
+  .toc-list__item--active & {
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 20%;
+      bottom: 20%;
+      width: 2px;
+      border-radius: 1px;
+      background: linear-gradient(to bottom, transparent, $accent-500, transparent);
+    }
+  }
+}
+
+.toc-link__num {
+  font-family: $font-serif;
+  font-style: italic;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: rgba($moon-100, 0.38);
+  flex-shrink: 0;
+  min-width: 1.4rem;
+  transition: color 0.2s ease;
+
+  .toc-list__item--active & { color: rgba($accent-500, 0.80); }
+  .toc-link:hover & { color: rgba($moon-100, 0.60); }
+}
+
+.toc-link__title {
+  font-family: $font-serif;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  color: rgba($moon-100, 0.60);
+  letter-spacing: 0.03em;
+  transition: color 0.2s ease;
+  flex: 1;
+
+  .toc-list__item--active & { color: rgba($moon-100, 0.92); }
+  .toc-link:hover & { color: rgba($moon-100, 0.82); }
+}
+
+.toc-link__marker {
+  font-size: 0.46rem;
+  color: rgba($accent-500, 0.70);
+  flex-shrink: 0;
+  align-self: center;
 }
 
 // ── Parchment scroll ──────────────────────────────────────────────────────────
@@ -385,8 +894,8 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   font-family: $font-serif;
-  font-size: clamp(0.97rem, 2.2vw, 1.08rem);
-  line-height: 1.84;
+  font-size: clamp(1.02rem, 2.4vw, 1.13rem);
+  line-height: 1.88;
   color: $ink-text;
   will-change: transform, opacity;
 
@@ -397,13 +906,13 @@ onMounted(() => {
     float: left;
     line-height: 0.80;
     margin: 0.12em 0.08em 0 0;
-    color: darken($ink-text, 8%);
+    color: color.adjust($ink-text, $lightness: -8%);
     font-family: $font-serif;
   }
 
   &.prose {
     :deep(p) {
-      margin: 0 0 1.1em;
+      margin: 0 0 1.2em;
       &:last-child { margin-bottom: 0; }
     }
 
@@ -413,7 +922,7 @@ onMounted(() => {
     :deep(h2), :deep(h3) {
       font-family: $font-serif;
       font-weight: 700;
-      color: darken($ink-text, 5%);
+      color: color.adjust($ink-text, $lightness: -5%);
       letter-spacing: 0.05em;
       margin: 1.6em 0 0.5em;
       line-height: 1.25;
@@ -562,5 +1071,10 @@ onMounted(() => {
 
   .chapter-nav__arrow { transition: none; }
   .foot-link { transition: none; }
+  .chapter-toc--mobile,
+  .chapter-toc--desktop { transition: none; }
+
+  .reading-veil { transition: none; }
+  .read-toggle  { transition: none; }
 }
 </style>

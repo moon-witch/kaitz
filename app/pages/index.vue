@@ -41,6 +41,8 @@ const { data: themes } = await useAsyncData("themes", () => $fetch("/api/themes"
 
   @media (min-width: 900px) {
     padding: 1.25rem 1rem 2rem;
+    height: 90dvh;
+    overflow: hidden;
   }
 }
 
