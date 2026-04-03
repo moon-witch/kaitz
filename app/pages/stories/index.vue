@@ -530,7 +530,7 @@ function onPageClick(e: MouseEvent): void {
 .stacks-hd__title {
   font-family: $font-serif;
   font-weight: 700;
-  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  font-size: clamp(2.07rem, 6vw, 3.58rem);
   letter-spacing: 0.16em;
   color: $moon-100;
   margin: 0.3rem 0 0.5rem;

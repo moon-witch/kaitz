@@ -10,6 +10,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  font-size: 106.25%; // 17px base — scales all rem values for readability
+}
+
 html, body {
   height: 100%;
   overscroll-behavior: none;

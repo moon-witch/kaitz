@@ -298,7 +298,7 @@ onMounted(() => {
 .masthead__title {
   font-family: $font-serif;
   font-weight: 700;
-  font-size: clamp(2rem, 7vw, 4rem);
+  font-size: clamp(1.88rem, 7vw, 3.76rem);
   letter-spacing: 0.14em;
   color: $ink-text;
   line-height: 1;
@@ -364,7 +364,7 @@ onMounted(() => {
 }
 
 .article__headline--lead {
-  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  font-size: clamp(1.51rem, 5vw, 2.45rem);
   letter-spacing: 0.06em;
   margin-bottom: 0.9rem;
 }

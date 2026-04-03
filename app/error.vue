@@ -69,7 +69,7 @@ function handleError() {
 
 .error-page__code {
   margin: 0;
-  font-size: clamp(3.5rem, 10vw, 6rem);
+  font-size: clamp(3.29rem, 10vw, 5.65rem);
   font-weight: 300;
   letter-spacing: 0.04em;
   color: rgba($moon-100, 0.88);

@@ -284,7 +284,7 @@ onMounted(() => {
 .story-hd__title {
   font-family: $font-serif;
   font-weight: 700;
-  font-size: clamp(1.9rem, 5.5vw, 3rem);
+  font-size: clamp(1.79rem, 5.5vw, 2.82rem);
   letter-spacing: 0.08em;
   color: $moon-100;
   line-height: 1.18;

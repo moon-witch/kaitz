@@ -64,7 +64,7 @@ defineProps<{
 
 .hallHeader__h1 {
   font-family: $font-serif;
-  font-size: clamp(1.7rem, 3vw, 2.2rem);
+  font-size: clamp(1.60rem, 3vw, 2.07rem);
   font-weight: 500;
   letter-spacing: 0.08em;
   margin: 0;

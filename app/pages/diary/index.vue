@@ -512,7 +512,7 @@ watch(mode, val => {
 
 .artisan-head__title {
   font-family: $font-serif;
-  font-size: clamp(1.75rem, 5vw, 2.9rem);
+  font-size: clamp(1.65rem, 5vw, 2.73rem);
   color: $moon-100;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -885,7 +885,7 @@ watch(mode, val => {
   transition: font-size 0.45s ease;
 
   .is-active & {
-    font-size: clamp(1.2rem, 3vw, 1.55rem);
+    font-size: clamp(1.13rem, 3vw, 1.46rem);
     white-space: normal;
     overflow: visible;
     text-overflow: unset;

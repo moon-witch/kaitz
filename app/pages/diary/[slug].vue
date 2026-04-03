@@ -350,7 +350,7 @@ onMounted(() => {
   font-family: $font-serif;
   font-weight: 700;
   color: $ink-text;
-  font-size: clamp(1.55rem, 5vw, 2.2rem);
+  font-size: clamp(1.46rem, 5vw, 2.07rem);
   letter-spacing: 0.06em;
   line-height: 1.2;
   margin: 0;
